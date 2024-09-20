@@ -114,6 +114,37 @@ We want to make sure that the core functionality of the Ansible Wrangler Automat
 - ServiceNow incident update
 
 ## Release Planning 
+This project will be delivered in a series of iterative releases, each introducing new features and functionality incrementally. 
+
+### Release overview
+Each release will focus on a specific set of features, starting with the core functionality of the system and expanding to include advanced capabilities such as playbook validation, error handling, and enhanced integration. 
+
+#### First Sprint Study and Core Infrastructure Setup
+
+The first sprint will focus on laying the groundwork for the project by studying the required APIs, setting up infrastructure, and implementing basic functionality.
+- Study ServiceNow API (how the API retrieves data and update status)
+- Study OpenAI GPT API (how to use the API for playbook generation)
+- GitHub API (how to use the GitHub API to create branches, commit files, and submit pull requests)
+- Setup Core System: set up the core infrastructure for running the automation system
+
+Expected Deliverables for First Spring:
+A basic functional system that can connect to ServiceNow and retrieve incident data. Log the incident details to the console. Handle basic API errors. 
+Also setup an initial codebase that sets the foundation for further functionality. 
+
+#### Second Sprint: Core Functionality
+
+#### Third Sprint: GitHub Integration and Pull Requests 
+
+#### Fourth Sprint: Advanced Features and Stretch Goals
+
+Key Deliverables Per Release
+•	Release 1: Core system infrastructure, logging, and initial API connections.
+•	Release 2: Full playbook generation pipeline, including incident retrieval, GPT-based generation, and playbook commits.
+•	Release 3: GitHub integration with pull request creation, validation, and error handling.
+•	Release 4: Advanced features, scalability improvements, and user notifications.
+
+Each sprint will conclude with a sprint review, where feedback will be collected to guide the next sprint. The first release is expected to provide the foundational elements of the system, with each subsequent release building upon it and adding more advanced features.
+
 
 ## General Comments
 
