@@ -140,10 +140,10 @@ Also setup an initial codebase that sets the foundation for further functionalit
 #### Fourth Sprint: Advanced Features and Stretch Goals
 
 Key Deliverables Per Release
-•	Release 1: Core system infrastructure, logging, and initial API connections.
-•	Release 2: Full playbook generation pipeline, including incident retrieval, GPT-based generation, and playbook commits.
-•	Release 3: GitHub integration with pull request creation, validation, and error handling.
-•	Release 4: Advanced features, scalability improvements, and user notifications.
+- Release 1: Core system infrastructure, logging, and initial API connections.
+- Release 2: Full playbook generation pipeline, including incident retrieval, GPT-based generation, and playbook commits.
+- Release 3: GitHub integration with pull request creation, validation, and error handling.
+- Release 4: Advanced features, scalability improvements, and user notifications.
 
 Each sprint will conclude with a sprint review, where feedback will be collected to guide the next sprint. The first release is expected to provide the foundational elements of the system, with each subsequent release building upon it and adding more advanced features.
 
