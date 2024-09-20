@@ -154,5 +154,8 @@ We plan to scale this project based on the available timeline, with the potentia
 
 ## Resources
 https://github.com/cooktheryan/wrangler
+
 https://github.com/cooktheryan/wrangler-out/pull/44/files
+
+https://docs.ansible.com/
 
