@@ -9,14 +9,15 @@
 | Jack Edelist | Contributor | edelist@bu.edu |
 | Arthur Hua | Contributor | ahua102@bu.edu |
 | Michael Barany | Contributor | mbarany@bu.edu |
+| Alireza Roshandel | Contributor | alirezad@bu.edu |
 
 ## Project Background and Description
-The Ansible Wrangler Automation project is a fully automated solution that integrates ServiceNow incident management with Ansible playbook generation and Github repository management. This project aims to simplify and streamline the process of generating, managing, and deploying Ansible playbooks in response to incidents reported by ServiceNow users. This system automates the process of identifying incidents, creating appropriate Ansible playbooks via the OpenAI API, checking for pre-existing playbooks, and pushing changes to a GitHub repository through pull requests. Overall this project should reduce the time between reporting an error and getting feedback from another software developer by having a solution be generated immediately. This should allow more people to be able to use ansible without having in-depth knowledge about how to fine-tune their system.
+The Ansible Wrangler Automation project is a fully automated solution that integrates ServiceNow incident management with Ansible playbook generation and Github repository management. This project aims to simplify and streamline the process of generating, managing, and deploying Ansible playbooks in response to incidents reported by ServiceNow users. This system automates the process of identifying incidents, creating appropriate Ansible playbooks via a Gen AI API, e.g., openAI API, checking for pre-existing playbooks, and pushing changes to a GitHub repository through pull requests. Overall this project should reduce the time between reporting an error and getting feedback from another software developer by having a solution be generated immediately. This should allow more people to be able to use ansible without having in-depth knowledge about how to fine-tune their system.
 
 ## Visions and Overall Goals
 Our vision is to reduce manual efforts involved in incident management and playbook creation, and create a fully automated pipeline that helps companies and software developers streamline their problem-solving process. 
 
-The preliminary goal is to create a system where users can pass code alongside an error message to a chat-based interface, such as Slack or other bot-accessible systems which is most utilized by the company using the platform (in this case RedHat). The bot with then use this information to generate a prompt that leverages OpenAI’s GPT to search through a git repository populated with potentially relevant playbooks that address issues. It will then determine if a suitable playbook exists and return it to the user. 
+The preliminary goal is to create a system where users can pass code alongside an error message to a chat-based interface, such as Slack or other bot-accessible systems which is most utilized by the company using the platform (in this case RedHat). The bot with then use this information to generate a prompt that leverages an LLM to search through a git repository populated with potentially relevant playbooks that address issues. It will then determine if a suitable playbook exists and return it to the user. 
 
 If no suitable playbook exists, the AI will dynamically generate one based on its understanding of the error, the provided code, and historical data similar to this issue. The ideal playbook will offer a step by step guide in resolving the issue which can be stored for future use. 
 
@@ -103,7 +104,7 @@ Architectural components:
 This solution is scalable, allowing it to be expanded or enhanced with more features, such as intelligent playbook customization, based on the timeline and evolving project needs.
 
 ## Design Implications and Discussion
-1. API-Driven Architecture: The decision to use an API-driven architecture ensures flexibility and scalability. By integrating with ServiceNow, OpenAI, and GitHub APIs, the system is modular and can easily be expanded to include other services in the future.
+1. API-Driven Architecture: The decision to use an API-driven architecture ensures flexibility and scalability. By integrating with ServiceNow, Gen AI API, and GitHub APIs, the system is modular and can easily be expanded to include other services in the future.
 2. Using Existing Language Models for Playbook Generation: allows the system to automatically create customized and relevant Ansible playbooks based on incident descriptions. This reduces manual intervention and accelerates incident resolution. Using a pre-trained model also enhances efficiency while ensuring that the system can adapt to various types of incidents with minimal human input.
 3. Automation: The whole point of this project is to use automation to speed up incident report. By eliminating manual steps, the system can quickly respond to incidents, reducing resolution times and ensuring a consistent, repeatable workflow.
 
