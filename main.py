@@ -1,21 +1,18 @@
-# The main file to setup all the APIs and code structures
-
 import requests 
 from requests.auth import HTTPBasicAuth
 import json
-import os
 
-# Connect to SerivceNow API
+# Connect to ServiceNow API
 # ServiceNow Instance Profile
-instance = 'https://dev265596.service-now.com'
+instance = 'https://dev262513.service-now.com'
 username = 'admin'
-password = 'e8*cNsMy6R-N'
+password = 'Gp8#xQ2b!'
 
 endpoint = '/api/now/table/incident'
 user_endpoint = '/api/now/table/sys_user'
 
 # Form the complete URL with filters and ordering by number in ascending order
-user_name = 'System Administrator'  # desired user name to find the sys_id
+user_name = 'Service Desk'  # desired user name to find the sys_id
 url = instance + user_endpoint + "?sysparm_query=name=" + user_name
 
 headers = {
@@ -23,10 +20,9 @@ headers = {
     "Accept": "application/json"
 }
 
+# Fetch user sys_id
 response = requests.get(url, headers=headers, auth=HTTPBasicAuth(username, password))
 
-# This prints out the system_id of the user: 
-# could later turn this into a function that returns the system_id
 if response.status_code == 200:
     data = response.json()
     if len(data['result']) > 0:
@@ -34,21 +30,33 @@ if response.status_code == 200:
         print("Caller sys_id:", caller_sys_id)
     else:
         print("User not found")
+        exit()
 else:
     print(f"Error: {response.status_code}, {response.text}")
-    
+    exit()
 
 # Updated filter query using the sys_id
 filter_query = f"caller_id={caller_sys_id}^active=true^universal_requestISEMPTY"
 url = instance + endpoint + "?sysparm_query=" + filter_query
 
-# Continue with making the API request...
+# Fetch incident data
 response = requests.get(url, headers=headers, auth=HTTPBasicAuth(username, password))
 
-# Check the response status and parse data
-# This is for the incidents since now we have the sys_id
 if response.status_code == 200:
     data = response.json()
-    print(json.dumps(data, indent=4))
+    
+    # If no incidents are found
+    if len(data['result']) == 0:
+        print("No incidents found for the user.")
+    
+    # Output required fields for each incident
+    for incident in data['result']:
+        output = {
+            "short_description": incident.get("short_description"),
+            "description": incident.get("description"),
+            "number": incident.get("number"),
+            "state": incident.get("state")
+        }
+        print(output)
 else:
     print(f"Error: {response.status_code}, {response.text}")
