@@ -1,0 +1,9 @@
+
+---
+- name: Sample Playbook for test pull request
+  hosts: localhost
+  tasks:
+    - name: Ensure test service is running
+      service:
+        name: test
+        state: started
