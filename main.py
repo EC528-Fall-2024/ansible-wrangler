@@ -48,9 +48,9 @@ def search_playbook_contents(directory, search_term):
     return matching_playbooks
 
 # Connect to ServiceNow API
-instance = 'https://dev262513.service-now.com'
-username = 'admin'
-password = 'Gp8#xQ2b!'
+instance = ''
+username = ''
+password = ''
 
 endpoint = '/api/now/table/incident'
 user_endpoint = '/api/now/table/sys_user'
