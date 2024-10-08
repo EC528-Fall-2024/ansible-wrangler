@@ -60,6 +60,7 @@ def get_most_recent_incident():
     logger.info("Making a call to ServiceNow to check for incidents created by System Administrator.")
     try:
         response = requests.get(url, headers=headers, auth=HTTPBasicAuth(username, password))
+        logger.info(f"ServiceNow response status code: {response.status_code}")
         response.raise_for_status()  # Raises an error for bad responses
         data = response.json()
 
@@ -90,21 +91,21 @@ def get_most_recent_incident():
                     print(f"Incident Description: {incident_description}")
 
                     # Search for playbooks related to the incident description
-                    print("Searching for playbooks related to the incident description...")
-                    matching_playbooks = search_existing_playbooks(incident_description)
-    #                 if matching_playbooks:
-    #                     for match in matching_playbooks:
-    #                         print(f"Found in file: {match['file']}")
-    #                         if 'task' in match:
-    #                             print(f"Task: {match['task']}")
-    #                 else:
-    #                     print("No matching playbooks found.")
-    #         else:
-    #             print("No incidents found.")
+                    # print("Searching for playbooks related to the incident description...")
+                    # matching_playbooks = search_existing_playbooks(incident_description)
+                    # if matching_playbooks:
+                    #     for match in matching_playbooks:
+                    #         print(f"Found in file: {match['file']}")
+                    #         if 'task' in match:
+                    #             print(f"Task: {match['task']}")
+                    # else:
+                    #     print("No matching playbooks found.")
+            else:
+                print("No incidents found.")
         except Exception as e:
             print(f"An error occurred when querying incidents: {e}")
-    # else:
-    #     print("Cannot proceed without a valid sys_id")
+    else:
+        print("Cannot proceed without a valid sys_id")
 
 def ask_openai(description):
     logger.info(f"Generating Ansible playbook for description: {description}")
@@ -151,10 +152,10 @@ def search_existing_playbooks(description):
 
     return None
 
-# def create_pull_request(branch_name, file_path, playbook_content):
-#     # repo_url = 'git@github.com:cooktheryan/wranger-out.git'
-#     repo_dir = 'repo'
-#     # pr_url = "https://api.github.com/repos/cooktheryan/wranger-out/pulls"
+def create_pull_request(branch_name, file_path, playbook_content):
+    # repo_url = 'git@github.com:cooktheryan/wranger-out.git'
+    repo_dir = 'repo'
+    # pr_url = "https://api.github.com/repos/cooktheryan/wranger-out/pulls"
 
 #     try:
 #         # Clone the repository
@@ -234,40 +235,41 @@ def process_incidents():
                 # continue
                 break
 
-#             description = most_recent_incident.get('description')
-#             incident_sys_id = most_recent_incident.get('sys_id')
+            description = most_recent_incident.get('description')
+            incident_sys_id = most_recent_incident.get('sys_id')
 
-#             if not description:
-#                 logger.info("No description found for the incident.")
-#                 time.sleep(5)
-#                 continue
+            if not description:
+                logger.info("No description found for the incident.")
+                # time.sleep(5)
+                # continue
+                break
 
 #             # Check if an existing playbook matches the incident description
-#             existing_playbook = search_existing_playbooks(description)
-#             if existing_playbook:
-#                 logger.info("Found an existing playbook that matches the incident description.")
-#                 update_incident_state(incident_sys_id, AWAITING_USER_INFO_STATE_ID, comment=f"Use the following playbook: {EXISTING_PLAYBOOKS_REPO_URL}")
-#                 continue
+            existing_playbook = search_existing_playbooks(description)
+            if existing_playbook:
+                logger.info("Found an existing playbook that matches the incident description.")
+                # update_incident_state(incident_sys_id, AWAITING_USER_INFO_STATE_ID, comment=f"Use the following playbook: {EXISTING_PLAYBOOKS_REPO_URL}")
+                continue
 
-#             # Get playbook content from OpenAI based on incident description
-#             playbook_content = ask_openai(description)
+            # Get playbook content from OpenAI based on incident description
+            playbook_content = ask_openai(description)
 
-#             # Format the playbook content
-#             formatted_content = format_playbook_content(playbook_content)
+            # Format the playbook content
+            formatted_content = format_playbook_content(playbook_content)
 
-#             # Generate branch name
-#             branch_name = f"generated-playbook-{datetime.now().strftime('%Y%m%d%H%M%S')}"
-#             file_path = "generated_playbook.yml"
+            # Generate branch name
+            branch_name = f"generated-playbook-{datetime.now().strftime('%Y%m%d%H%M%S')}"
+            file_path = "generated_playbook.yml"
 
-#             # Create a pull request
-#             pr_response = create_pull_request(branch_name, file_path, formatted_content)
+            # Create a pull request
+            pr_response = create_pull_request(branch_name, file_path, formatted_content)
 
-#             if pr_response:
-#                 logger.info(f"Pull request created: {pr_response['html_url']}")
-#                 # Update the incident state to "Awaiting User Info"
-#                 update_incident_state(incident_sys_id, AWAITING_USER_INFO_STATE_ID)
-#             else:
-#                 logger.error('Failed to create pull request.')
+            if pr_response:
+                logger.info(f"Pull request created: {pr_response['html_url']}")
+                # Update the incident state to "Awaiting User Info"
+                # update_incident_state(incident_sys_id, AWAITING_USER_INFO_STATE_ID)
+            else:
+                logger.error('Failed to create pull request.')
 
         except Exception as e:
             logger.error(f"Error processing request: {e}")
