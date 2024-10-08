@@ -5,7 +5,7 @@ import os
 import yaml
 from openai import OpenAI
 
-openai_api_key = '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'
+openai_api_key = ''
 client = OpenAI(api_key=openai_api_key)
 
 # Function to load and search playbook contents
