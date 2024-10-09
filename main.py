@@ -15,6 +15,7 @@ user_endpoint = '/api/now/table/sys_user'
 
 # Form the complete URL with filters and ordering by number in ascending order
 user_name = 'Service Desk'  # desired user name to find the sys_id
+incident_number = 'INC0010003'  # desired incident number to find the playbook for
 url = instance + user_endpoint + "?sysparm_query=name=" + user_name
 
 headers = {
@@ -56,31 +57,34 @@ if response.status_code == 200:
 
 
     for incident in data['result']:
-
-        existing_playbooks = []
-        for root, _, files in os.walk("existing_playbooks/"):
-            for file in files:
-                if file.endswith(".yml") or file.endswith(".yaml"):
-                    with open(os.path.join(root, file), 'r') as f:
-                        playbook_content = f.read()
-                        existing_playbooks.append(playbook_content)
-
-        matched_playbook = evaluate_playbooks_with_llama(existing_playbooks, incident.get("short_description"))
-
-        if matched_playbook == None:
-            playbook = generate_ansible_playbook(incident.get("description"))
-        else:
-            playbook = matched_playbook
-        output = {
-            "short_description": incident.get("short_description"),
-            "description": incident.get("description"),
-            "number": incident.get("number"),
-            "state": incident.get("state"),
-            "suggested_playbook": playbook
-        }
+        if(incident.get("number") == incident_number):
         
-        print("Description: ", output["short_description"])
-        print("Playbook: ", playbook)
+            existing_playbooks = []
+            for root, _, files in os.walk("existing_playbooks/"):
+                for file in files:
+                    if file.endswith(".yml") or file.endswith(".yaml"):
+                        with open(os.path.join(root, file), 'r') as f:
+                            playbook_content = f.read()
+                            existing_playbooks.append(playbook_content)
+
+            matched_playbook = evaluate_playbooks_with_llama(existing_playbooks, incident.get("short_description"))
+
+            if matched_playbook == None:
+                playbook = generate_ansible_playbook(incident.get("description"))
+            else:
+                playbook = matched_playbook
+            output = {
+                "short_description": incident.get("short_description"),
+                "description": incident.get("description"),
+                "number": incident.get("number"),
+                "state": incident.get("state"),
+                "suggested_playbook": playbook
+            }
+            print("\n\nIncident details:")
+            print("Description: ", output["short_description"])
+            print("Incident Number: ", output["number"])
+            print("\n\nSuggested playbook:")
+            print("Playbook: ", playbook)
 else:
     print(f"Error: {response.status_code}, {response.text}")
 
