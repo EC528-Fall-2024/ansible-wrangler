@@ -122,19 +122,21 @@ This project will be delivered in a series of iterative releases, each introduci
 ### Release overview
 Each release will focus on a specific set of features, starting with the core functionality of the system and expanding to include advanced capabilities such as playbook validation, error handling, and enhanced integration. 
 
-#### First Sprint Study and Core Infrastructure Setup
+#### First Sprint Study, Research and Core Infrastructure Setup
 
-The first sprint will focus on laying the groundwork for the project by studying the required APIs, setting up infrastructure, and implementing basic functionality.
-- Study ServiceNow API (how the API retrieves data and update status)
-- Study OpenAI GPT API (how to use the API for playbook generation)
-- GitHub API (how to use the GitHub API to create branches, commit files, and submit pull requests)
-- Setup Core System: set up the core infrastructure for running the automation system
+In the first sprint, we focused on researching all the necessary frameworks, structures, and APIs for this project. We researched multiple LLMS (OpenAI and Llama) to see which model is faster and more efficient for Ansible playbook generation. We also researched Rest API to see how data can be transferred between different modules within our project. We also investigated different cloud services and structures to apply the best cloud application. 
 
-Expected Deliverables for First Spring:
-A basic functional system that can connect to ServiceNow and retrieve incident data. Log the incident details to the console. Handle basic API errors. 
-Also setup an initial codebase that sets the foundation for further functionality. 
+Please see below for our sprint 1 slides and presentation: https://drive.google.com/drive/folders/19N2t67B59QdDt1MnHAf7CkfM7lJ14rJK?usp=drive_link
 
 #### Second Sprint: Core Functionality
+
+The goal of the second sprint is to establish the core structure of the Ansible Wrangler Automation system and implement basic functionalities that enable the system to handle incidents efficiently. 
+- Develop a simple and intuitive front-end interface where users can submit incident requests. This interface will collect relevant information such as the error description, code snippets (if applicable), urgency, state of the issue, and any additional context needed to resolve the issue.
+  - This interface could be integrated into existing chat platforms like Slack, or it could be a standalone web form that communicates with the backend system via REST API calls.
+- Implement a search algorithm to scan the existing repository of playbooks for a match.
+- Integrate a LLaMA Language Model dynamically generate new Ansible playbooks when no suitable existing playbook is found.
+- The system will analyze the incident description and any provided code to create a customized playbook. This playbook will be in YAML format and structured to resolve the issue step-by-step.
+  
 
 #### Third Sprint: GitHub Integration and Pull Requests 
 
