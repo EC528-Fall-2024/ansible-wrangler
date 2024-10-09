@@ -96,7 +96,8 @@ if response.status_code == 200:
 else:
     print(f"Error: {response.status_code}, {response.text}")
 
-i=10
-for output in outputs:
-    upload_new_playbook_to_repo(BRANCH_NAME, file_path.split('.')[0]+str(i)+'.yaml', output["suggested_playbook"], GITHUB_API_URL, github_token)
-    i+=1
+if github_token != "":
+    i=10
+    for output in outputs:
+        upload_new_playbook_to_repo(BRANCH_NAME, file_path.split('.')[0]+str(i)+'.yaml', output["suggested_playbook"], GITHUB_API_URL, github_token)
+        i+=1
