@@ -58,7 +58,7 @@ if response.status_code == 200:
     for incident in data['result']:
 
 
-        for root, _, files in os.walk(EXISTING_PLAYBOOKS_DIR):
+        for root, _, files in os.walk("existing_playbooks"):
             for file in files:
                 if file.endswith(".yml") or file.endswith(".yaml"):
                     with open(os.path.join(root, file), 'r') as f:
