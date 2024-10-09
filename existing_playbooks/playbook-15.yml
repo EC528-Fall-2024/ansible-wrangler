@@ -1,0 +1,8 @@
+---
+- hosts: all
+  tasks:
+    - name: Delete a file
+      file:
+        path: /tmp/myfile.txt
+        state: absent
+        
