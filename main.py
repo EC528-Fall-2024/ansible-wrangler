@@ -3,6 +3,7 @@ from requests.auth import HTTPBasicAuth
 import json
 import os
 from llama_interface import generate_ansible_playbook, evaluate_playbooks_with_llama
+from git_interface import upload_new_playbook_to_repo
 
 # Connect to ServiceNow API
 # ServiceNow Instance Profile
@@ -12,6 +13,14 @@ password = 'Gp8#xQ2b!'
 
 endpoint = '/api/now/table/incident'
 user_endpoint = '/api/now/table/sys_user'
+
+github_token = ""  # Replace with your actual GitHub token
+file_path = "existing_playbooks/my_new_playbook.yaml"  # Specify the file path in the repo
+
+REPO_OWNER = "EC528-Fall-2024"  # Your GitHub organization or username
+REPO_NAME = "ansible-wrangler"  # Your repository name
+BRANCH_NAME = "main"  # The branch where you want to add the playbook
+GITHUB_API_URL = f"https://api.github.com/repos/{REPO_OWNER}/{REPO_NAME}"
 
 # Form the complete URL with filters and ordering by number in ascending order
 user_name = 'Service Desk'  # desired user name to find the sys_id
@@ -43,6 +52,8 @@ url = instance + endpoint + "?sysparm_query=" + filter_query
 
 # Fetch incident data
 response = requests.get(url, headers=headers, auth=HTTPBasicAuth(username, password))
+
+outputs =[]
 
 if response.status_code == 200:
     data = response.json()
@@ -81,6 +92,11 @@ if response.status_code == 200:
         
         print("Description: ", output["short_description"])
         print("Playbook: ", playbook)
+        outputs.append(output)
 else:
     print(f"Error: {response.status_code}, {response.text}")
 
+i=10
+for output in outputs:
+    upload_new_playbook_to_repo(BRANCH_NAME, file_path.split('.')[0]+str(i)+'.yaml', output["suggested_playbook"], GITHUB_API_URL, github_token)
+    i+=1
