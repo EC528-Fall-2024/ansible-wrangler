@@ -47,3 +47,32 @@ def generate_ansible_playbook(task_description):
     response = ollama.chat(model=model_name, messages=[{"role": "user", "content": prompt}])
     # Prune the response to only maintain the playbook
     return prune_ansible_playbook(response['message'])
+
+
+def evaluate_playbooks_with_llama(existing_playbooks, description):
+    # Loop through each playbook to evaluate
+    pb = None
+    for playbook in existing_playbooks:
+        # Define the prompt to be sent to LLaMA 3.2 1B
+        prompt = f"""
+        You are an expert in Ansible playbooks. Evaluate if the provided playbook content matches the given incident description. Just say "IT MATCHS" in case of match and "IT DOES NOT MATCH" otherwise.
+        Incident description: {description}
+        Playbook content: {playbook}
+        """
+
+        # Call LLaMA 3.2 1B via ollama
+        response = ollama.chat(
+            model="llama3.2:1b",  # Specify the model name in ollama
+            messages=[{"role": "system", "content": prompt}]
+        )
+
+        # Extract the evaluation from the response
+        print(response)
+        evaluation = response['message']['content'].strip()
+
+        # Check if the evaluation mentions that the playbook matches the incident
+        if "IT MATCHS" in evaluation:
+            return playbook
+
+    # Return None if no matching playbook is found
+    return None

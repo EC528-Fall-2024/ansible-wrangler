@@ -52,6 +52,9 @@ if response.status_code == 200:
         print("No incidents found for the user.")
     
     # Output required fields for each incident
+
+    
+
     for incident in data['result']:
         playbook = generate_ansible_playbook(incident.get("description"))
         output = {
