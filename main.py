@@ -1,8 +1,8 @@
 import requests 
 from requests.auth import HTTPBasicAuth
 import json
-
-from llama_interface import generate_ansible_playbook
+import os
+from llama_interface import generate_ansible_playbook, evaluate_playbooks_with_llama
 
 # Connect to ServiceNow API
 # ServiceNow Instance Profile
@@ -57,15 +57,15 @@ if response.status_code == 200:
 
     for incident in data['result']:
 
-
-        for root, _, files in os.walk("existing_playbooks"):
+        existing_playbooks = []
+        for root, _, files in os.walk("existing_playbooks/"):
             for file in files:
                 if file.endswith(".yml") or file.endswith(".yaml"):
                     with open(os.path.join(root, file), 'r') as f:
                         playbook_content = f.read()
                         existing_playbooks.append(playbook_content)
 
-        matched_playbook = evaluate_playbooks_with_llama(existing_playbooks, description)
+        matched_playbook = evaluate_playbooks_with_llama(existing_playbooks, incident.get("short_description"))
 
         if matched_playbook == None:
             playbook = generate_ansible_playbook(incident.get("description"))
