@@ -7,9 +7,9 @@ from git_interface import upload_new_playbook_to_repo
 
 # Connect to ServiceNow API
 # ServiceNow Instance Profile
-instance = 'https://dev262513.service-now.com'
+instance = 'https://dev248794.service-now.com'
 username = 'admin'
-password = 'Gp8#xQ2b!'
+password = '$1sh2t+VcALL'
 
 endpoint = '/api/now/table/incident'
 user_endpoint = '/api/now/table/sys_user'
