@@ -16,6 +16,12 @@
 
 [Sprint 2 Demo](https://drive.google.com/drive/folders/1Zj_zdQ7Hdqzi7-cDt-tku3rnGXbvKtWH?usp=sharing)
 
+## Setup
+conda env create -f environment.yml
+ollama serve
+python main.py
+
+
 ## Project Background and Description
 The Ansible Wrangler Automation project is a fully automated solution that integrates ServiceNow incident management with Ansible playbook generation and Github repository management. This project aims to simplify and streamline the process of generating, managing, and deploying Ansible playbooks in response to incidents reported by ServiceNow users. This system automates the process of identifying incidents, creating appropriate Ansible playbooks via a Gen AI API, e.g., openAI API, checking for pre-existing playbooks, and pushing changes to a GitHub repository through pull requests. Overall this project should reduce the time between reporting an error and getting feedback from another software developer by having a solution be generated immediately. This should allow more people to be able to use ansible without having in-depth knowledge about how to fine-tune their system.
 
