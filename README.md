@@ -16,6 +16,8 @@
 
 [Sprint 2 Demo](https://drive.google.com/drive/folders/1Zj_zdQ7Hdqzi7-cDt-tku3rnGXbvKtWH?usp=sharing)
 
+[Sprint 3 Demo](https://drive.google.com/drive/folders/1ChZvkJFYUFSo1Nl7DjrvoWRS28i35qFZ?usp=sharing)
+
 ## Setup
 Install Ollama and run it using "ollama serve" on terminal
 
