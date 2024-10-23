@@ -2,7 +2,7 @@ import requests
 from requests.auth import HTTPBasicAuth
 import json
 import os
-from llama_interface import generate_ansible_playbook, evaluate_playbooks_with_llama
+from llama_interface import generate_ansible_playbook, evaluate_playbooks_with_llama, create_faiss_index
 from git_interface import upload_new_playbook_to_repo
 
 # Connect to ServiceNow API
@@ -24,7 +24,7 @@ GITHUB_API_URL = f"https://api.github.com/repos/{REPO_OWNER}/{REPO_NAME}"
 
 # Form the complete URL with filters and ordering by number in ascending order
 user_name = 'Service Desk'  # desired user name to find the sys_id
-incident_number = 'INC0010003'  # desired incident number to find the playbook for
+incident_number = 'INC0010007'  # desired incident number to find the playbook for
 url = instance + user_endpoint + "?sysparm_query=name=" + user_name
 
 headers = {
@@ -32,10 +32,14 @@ headers = {
     "Accept": "application/json"
 }
 
+
+
+
 # Fetch user sys_id
 response = requests.get(url, headers=headers, auth=HTTPBasicAuth(username, password))
 
 if response.status_code == 200:
+
     data = response.json()
     if len(data['result']) > 0:
         caller_sys_id = data['result'][0]['sys_id']
@@ -56,7 +60,11 @@ response = requests.get(url, headers=headers, auth=HTTPBasicAuth(username, passw
 
 outputs =[]
 
+
 if response.status_code == 200:
+
+    create_faiss_index()
+
     data = response.json()
     
     # If no incidents are found
@@ -66,24 +74,13 @@ if response.status_code == 200:
     # Output required fields for each incident
 
 
-
+    #print(data['result'])
     for incident in data['result']:
         if(incident.get("number") == incident_number):
         
-            existing_playbooks = []
-            for root, _, files in os.walk("existing_playbooks/"):
-                for file in files:
-                    if file.endswith(".yml") or file.endswith(".yaml"):
-                        with open(os.path.join(root, file), 'r') as f:
-                            playbook_content = f.read()
-                            existing_playbooks.append(playbook_content)
 
-            matched_playbook = evaluate_playbooks_with_llama(existing_playbooks, incident.get("short_description"))
-
-            if matched_playbook == None:
-                playbook = generate_ansible_playbook(incident.get("description"))
-            else:
-                playbook = matched_playbook
+            playbook = generate_ansible_playbook(incident.get("short_description"))
+            
             output = {
                 "short_description": incident.get("short_description"),
                 "description": incident.get("description"),
