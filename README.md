@@ -17,8 +17,10 @@
 [Sprint 2 Demo](https://drive.google.com/drive/folders/1Zj_zdQ7Hdqzi7-cDt-tku3rnGXbvKtWH?usp=sharing)
 
 ## Setup
+Install Ollama and run it using "ollama serve" on terminal
+
 conda env create -f environment.yml
-ollama serve
+conda activate faiss_env
 python main.py
 
 
