@@ -20,7 +20,9 @@
 Install Ollama and run it using "ollama serve" on terminal
 
 conda env create -f environment.yml
+
 conda activate faiss_env
+
 python main.py
 
 
