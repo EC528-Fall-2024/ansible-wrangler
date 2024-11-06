@@ -1,8 +1,6 @@
 ---
 - hosts: all
   tasks:
-    - name: Start and enable apache2
-      service:
-        name: apache2
-        state: started
-        enabled: yes
+    - name: Print message
+      debug:
+        msg: Hello Ansible World
