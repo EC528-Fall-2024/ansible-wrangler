@@ -1,9 +1,22 @@
 ---
 - hosts: all
   vars:
-    - username: sammy
-    - home: /home/sammy   
+    - user: sammy
   tasks:
-    - name: print variables
+    - name: Check if file already exists
+      command: ls /home/{{ user }}/myfile
+      register: file_exists
+      ignore_errors: yes
+
+    - name: create file for user
+      file:
+        path: /home/{{ user }}/myfile
+        state: touch
+      when: file_exists is failed
+
+    - name: show message if file exists
       debug:
-        msg: "Username: {{ username }}, Home dir: {{ home }}"
+        msg: The user file already exists.
+      when: file_exists is succeeded
+
+
