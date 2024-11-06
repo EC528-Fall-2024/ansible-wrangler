@@ -99,3 +99,5 @@ $RECYCLE.BIN/
 
 # GitHub Actions
 .github/
+
+ansible_playbooks
