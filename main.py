@@ -11,18 +11,23 @@ from awx import create_job_template, launch_job, track_job, trigger_project_upda
 load_dotenv()
 
 # Connect to ServiceNow API
-# ServiceNow Instance Profile
-instance = 'https://dev248794.service-now.com'
-username = 'admin'
-password = '$1sh2t+VcALL'
+instance = os.getenv("INSTANCE")
+username = os.getenv("USERNAME")
+password = os.getenv("PASSWORD")
 
 endpoint = '/api/now/table/incident'
 user_endpoint = '/api/now/table/sys_user'
 
 # Form the complete URL with filters and ordering by number in ascending order
-user_name = 'System Administrator'  # Desired user name to find the sys_id
-incident_number = 'INC0010026'  # Desired incident number to find the playbook for
+user_name = "System Administrator" ## UPDATE USER
+incident_number = os.getenv("INCIDENT")
 url = instance + user_endpoint + "?sysparm_query=name=" + user_name
+
+# Define GitHub repository details
+git_repo_url = os.getenv("GITHUB_URL")
+branch = os.getenv("BRANCH")
+existing_directory = os.getenv("EXISTING_DIRECTORY")
+out_directory = os.getenv("OUT_DIRECTORY")
 
 headers = {
     "Content-Type": "application/json",
@@ -62,20 +67,15 @@ if response.status_code == 200:
     for incident in data['result']:
         if incident.get("number") == incident_number:
             description = incident.get("description")
-            print(f"Incident Description: {description}")
+            # print(f"Incident Description: {description}")
             short_description = incident.get("short_description")
-            print(f"Short Description: {short_description}")
-
-            # Define GitHub repository details
-            git_repo_url = 'https://github.com/EC528-Fall-2024/ansible-wrangler.git'  # GitHub URL
-            branch = 'Mac-New'  # Branch
-            directory = 'existing_playbooks'  # Directory
+            # print(f"Short Description: {short_description}")
 
             # Evaluate existing playbooks from GitHub
             matched_playbook = evaluate_playbooks_with_llama(
                 git_repo_url,
                 branch,
-                directory,
+                existing_directory,
                 short_description
             )
 
@@ -88,10 +88,10 @@ if response.status_code == 200:
                 playbook = matched_playbook
                 playbook_filename = f"matched_playbook_{incident_number}.yml"
 
-            # Save the playbook to the 'wrangler_out' directory in the Git repository
+            # Save the playbook to the output directory in the Git repository
             repo_path = os.path.abspath('.')
-            saved_directory = os.path.join(repo_path, 'wrangler_out')
-            os.makedirs(saved_directory, exist_ok=True)  # Ensure the directory exists
+            saved_directory = os.path.join(repo_path, out_directory)
+            os.makedirs(saved_directory, exist_ok=True)
             playbook_path = os.path.join(saved_directory, playbook_filename)
 
             with open(playbook_path, 'w') as f:
@@ -103,32 +103,33 @@ if response.status_code == 200:
             subprocess.run(['git', 'push', 'origin', branch], cwd=repo_path)
 
             # Trigger project update in AWX to sync the latest playbooks
-            # project_id = int(os.getenv("PROJECT_ID"))
-            # trigger_project_update(project_id)
+            project_id = int(os.getenv("PROJECT_ID"))
+            trigger_project_update(project_id)
 
             # Set playbook path for AWX
-            # awx_playbook_path = f"wrangler_out/{playbook_filename}"
+            awx_playbook_path = f"{out_directory}/{playbook_filename}"
 
             # Use AWX to run the playbook
-            # job_template_id = create_job_template(awx_playbook_path)
-            # job_id = launch_job(job_template_id)
-            # job_status = track_job(job_id)
+            job_template_id = create_job_template(awx_playbook_path)
+            job_id = launch_job(job_template_id)
+            job_status = track_job(job_id)
 
-#             output = {
-#                 "short_description": short_description,
-#                 "description": description,
-#                 "number": incident.get("number"),
-#                 "state": incident.get("state"),
-#                 "suggested_playbook": playbook,
-#                 "job_status": job_status
-#             }
-#             print("\n\nIncident details:")
-#             print("User: ", user_name)
-#             print("Description: ", output["short_description"])
-#             print("Incident Number: ", output["number"])
-#             print("\n\nSuggested playbook:")
-#             print("Playbook:\n", playbook)
-#             print(f"\nJob completed with status: {job_status}")
+            # Output the result details
+            output = {
+                "short_description": short_description,
+                "description": description,
+                "number": incident.get("number"),
+                "state": incident.get("state"),
+                "suggested_playbook": playbook,
+                "job_status": job_status
+            }
+            print("\n\nIncident details:")
+            print("User: ", user_name)
+            print("Description: ", output["short_description"])
+            print("Incident Number: ", output["number"])
+            print("\n\nSuggested playbook:")
+            print("Playbook:\n", playbook)
+            print(f"\nJob completed with status: {job_status}")
 
-# else:
-#     print(f"Error: {response.status_code}, {response.text}")
+else:
+    print(f"Error: {response.status_code}, {response.text}")
