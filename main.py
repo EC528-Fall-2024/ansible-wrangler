@@ -81,6 +81,7 @@ if response.status_code == 200:
 
             if matched_playbook is None:
                 # Generate a new playbook if no match is found
+                print("Generating new playbook.")
                 playbook = generate_ansible_playbook(description)
                 playbook_filename = f"playbook_{incident_number}.yml"
             else:

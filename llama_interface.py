@@ -103,7 +103,7 @@ def evaluate_playbooks_with_llama(git_repo_url, branch, directory, description):
 
         # Check if the playbook matches
         if "CONFIRM MATCH" in evaluation.upper():
-            # print("Matching playbook found:\n", playbook_content)  # Print the playbook content directly
+            print("Matching playbook found:\n", playbook_content)  # Print the playbook content directly
             return playbook_content
 
     print("No matching playbook found.")
