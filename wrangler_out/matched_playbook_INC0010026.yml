@@ -1,6 +1,9 @@
 ---
 - hosts: all
+  vars:
+    - username: sammy
+    - home: /home/sammy   
   tasks:
-    - name: print facts
+    - name: print variables
       debug:
-        msg: "IPv4 address: {{ ansible_default_ipv4.address }}"
+        msg: "Username: {{ username }}, Home dir: {{ home }}"
