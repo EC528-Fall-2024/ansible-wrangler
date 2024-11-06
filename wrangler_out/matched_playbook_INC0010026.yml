@@ -1,6 +1,13 @@
 ---
 - hosts: all
+  vars:
+    - create_user_file: yes
+    - user: sammy  
   tasks:
-    - name: Print message
-      debug:
-        msg: Hello Ansible World
+    - name: create file for user
+      file:
+        path: /home/{{ user }}/myfile
+        state: touch
+      when: create_user_file
+
+
