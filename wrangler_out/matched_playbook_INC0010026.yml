@@ -1,6 +1,6 @@
 ---
 - hosts: all
   tasks:
-    - name: print facts
+    - name: Print message
       debug:
-        msg: "IPv4 address: {{ ansible_default_ipv4.address }}"
+        msg: Hello Ansible World
