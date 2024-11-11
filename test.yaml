@@ -1,0 +1,15 @@
+Identity added: /runner/artifacts/26/ssh_key_data (/runner/artifacts/26/ssh_key_data)
+199.94.61.34 | SUCCESS => {
+    "ansible_facts": {
+        "discovered_interpreter_python": "/usr/bin/python3"
+    },
+    "changed": false,
+    "ping": "pong"
+}
+199.94.60.165 | SUCCESS => {
+    "ansible_facts": {
+        "discovered_interpreter_python": "/usr/bin/python3"
+    },
+    "changed": false,
+    "ping": "pong"
+}
