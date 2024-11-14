@@ -8,7 +8,7 @@ from llama_interface import generate_ansible_playbook, evaluate_playbooks_with_l
 from awx import create_job_template, launch_job, track_job, trigger_project_update
 
 # Load environment variables
-load_dotenv()
+load_dotenv(override = True)
 
 # Connect to ServiceNow API
 instance = os.getenv("INSTANCE")
