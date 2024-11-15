@@ -6,7 +6,7 @@ from llama_interface import generate_ansible_playbook, evaluate_playbooks_with_l
 from git_interface import upload_new_playbook_to_repo
 from utils import check_gpu_availability
 
-use_gpu=False#check_gpu_availability()
+use_gpu=check_gpu_availability()
 
 # Connect to ServiceNow API
 # ServiceNow Instance Profile
