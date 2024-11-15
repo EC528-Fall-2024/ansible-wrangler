@@ -4,6 +4,9 @@ import json
 import os
 from llama_interface import generate_ansible_playbook, evaluate_playbooks_with_llama, create_faiss_index
 from git_interface import upload_new_playbook_to_repo
+from utils import check_gpu_availability
+
+use_gpu=False#check_gpu_availability()
 
 # Connect to ServiceNow API
 # ServiceNow Instance Profile
@@ -63,7 +66,7 @@ outputs =[]
 
 if response.status_code == 200:
 
-    create_faiss_index()
+    create_faiss_index(use_gpu=use_gpu)
 
     data = response.json()
     
@@ -78,8 +81,8 @@ if response.status_code == 200:
     for incident in data['result']:
         if(incident.get("number") == incident_number):
         
-
-            playbook = generate_ansible_playbook(incident.get("short_description"))
+            
+            playbook = generate_ansible_playbook(incident.get("short_description"), use_gpu=use_gpu)
             
             output = {
                 "short_description": incident.get("short_description"),

@@ -1,7 +1,7 @@
 import os
 import requests
 
-def search_ansible_playbooks(query="ansible playbook", language="yaml", per_page=10, download_folder="ansible_playbooks"):
+def search_ansible_playbooks(git_token, query="ansible playbook", language="yaml", per_page=100, download_folder="ansible_playbooks"):
     # GitHub API endpoint for searching repositories
     url = "https://api.github.com/search/code"
     
@@ -15,7 +15,7 @@ def search_ansible_playbooks(query="ansible playbook", language="yaml", per_page
     
     headers = {
         "Accept": "application/vnd.github.v3+json",
-        "Authorization": "token TOKEN"  # Replace with your GitHub token
+        "Authorization": f"token {git_token}"  # Replace with your GitHub token
     }
     
     # Create the download folder if it doesn't exist
@@ -43,4 +43,6 @@ def search_ansible_playbooks(query="ansible playbook", language="yaml", per_page
         print(f"Failed to retrieve results. Status code: {response.status_code}, Message: {response.json().get('message')}")
 
 # Run the search and download function
-search_ansible_playbooks()
+print('Type you GIT TOKEN:')
+git_token = input()
+search_ansible_playbooks(git_token)
