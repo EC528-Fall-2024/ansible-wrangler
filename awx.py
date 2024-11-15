@@ -4,7 +4,7 @@ import os
 from dotenv import load_dotenv
 
 # Load environment variables from .env file
-load_dotenv()
+load_dotenv(override=True)
 
 # AWX API credentials and settings from .env
 AWX_URL = os.getenv("AWX_URL").strip()

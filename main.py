@@ -53,7 +53,7 @@ def fetch_incidents(username, password, state):
     url = SN_URL
     params = {
         'sysparm_limit': '100',  # Adjust limit as needed
-        'sysparm_query': f'state{state}',
+        'sysparm_query': f'state={state}',
     }
 
     response = requests.get(url, auth=HTTPBasicAuth(username, password), params=params)
@@ -80,7 +80,6 @@ def process_incident(incident, username, password):
     while True:
         # Evaluate existing playbooks from GitHub
 
-        print("here")
         matched_playbook = evaluate_playbooks_with_llama(
             git_repo_url,
             branch,
@@ -187,7 +186,7 @@ def main():
 
         while True:
             # Fetch incidents for the user
-            incidents = fetch_incidents(username, password, '1')
+            incidents = fetch_incidents(username, password, 1)
             if not incidents:
                 print("No incidents found. Waiting for 10 seconds before retrying...")
                 time.sleep(10)  # Wait for 10 seconds
@@ -197,7 +196,7 @@ def main():
             for incident in incidents:
                 print("here")
                 update_incident_state(incident,'2', username, password, f'{username} is picking up incident {incident}')
-                process_incident(incident, username, password)
+                process_incident(incident, username, password) # this is a blocking point because it asks for user input to check if playbook is valid
 
             # Ask if the user wants to check for new incidents
             check_more = input("\nCheck for new incidents? (y/n): ").strip().lower()
