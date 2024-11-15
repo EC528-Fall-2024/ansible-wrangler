@@ -1,48 +1,44 @@
-import requests 
+import requests
 from requests.auth import HTTPBasicAuth
 import json
 import os
-from llama_interface import generate_ansible_playbook, evaluate_playbooks_with_llama, create_faiss_index
-from git_interface import upload_new_playbook_to_repo
+import time
+import subprocess
+from dotenv import load_dotenv
+from llama_interface import generate_ansible_playbook, create_faiss_index
+from awx import create_job_template, launch_job, track_job, trigger_project_update
 from utils import check_gpu_availability
-
+# Load environment variables
+load_dotenv(override=True)
 use_gpu=check_gpu_availability()
-
 # Connect to ServiceNow API
-# ServiceNow Instance Profile
-instance = 'https://dev248794.service-now.com'
-username = 'admin'
-password = '$1sh2t+VcALL'
-
+instance = os.getenv("INSTANCE")
+username = os.getenv("USERNAME")
+password = os.getenv("PASSWORD")
 endpoint = '/api/now/table/incident'
 user_endpoint = '/api/now/table/sys_user'
 
-github_token = ""  # Replace with your actual GitHub token
-file_path = "existing_playbooks/my_new_playbook.yaml"  # Specify the file path in the repo
-
-REPO_OWNER = "EC528-Fall-2024"  # Your GitHub organization or username
-REPO_NAME = "ansible-wrangler"  # Your repository name
-BRANCH_NAME = "main"  # The branch where you want to add the playbook
-GITHUB_API_URL = f"https://api.github.com/repos/{REPO_OWNER}/{REPO_NAME}"
-
 # Form the complete URL with filters and ordering by number in ascending order
-user_name = 'Service Desk'  # desired user name to find the sys_id
-incident_number = 'INC0010007'  # desired incident number to find the playbook for
+user_name = "System Administrator" ## UPDATE USER
+incident_number = os.getenv("INCIDENT")
 url = instance + user_endpoint + "?sysparm_query=name=" + user_name
+
+# Define GitHub repository details
+git_repo_url = os.getenv("GITHUB_URL")
+branch = os.getenv("BRANCH")
+existing_directory = os.getenv("EXISTING_DIRECTORY")
+out_directory = os.getenv("OUT_DIRECTORY")
 
 headers = {
     "Content-Type": "application/json",
     "Accept": "application/json"
 }
 
-
-
-
 # Fetch user sys_id
+create_faiss_index(use_gpu=use_gpu)
+
 response = requests.get(url, headers=headers, auth=HTTPBasicAuth(username, password))
-
 if response.status_code == 200:
-
     data = response.json()
     if len(data['result']) > 0:
         caller_sys_id = data['result'][0]['sys_id']
@@ -57,51 +53,83 @@ else:
 # Updated filter query using the sys_id
 filter_query = f"caller_id={caller_sys_id}^active=true^universal_requestISEMPTY"
 url = instance + endpoint + "?sysparm_query=" + filter_query
-
+seen_instances = set()
 # Fetch incident data
-response = requests.get(url, headers=headers, auth=HTTPBasicAuth(username, password))
+while True:
+    response = requests.get(url, headers=headers, auth=HTTPBasicAuth(username, password))
 
-outputs =[]
-
-
-if response.status_code == 200:
-
-    create_faiss_index(use_gpu=use_gpu)
-
-    data = response.json()
-    
-    # If no incidents are found
-    if len(data['result']) == 0:
-        print("No incidents found for the user.")
-    
-    # Output required fields for each incident
-
-
-    #print(data['result'])
-    for incident in data['result']:
-        if(incident.get("number") == incident_number):
+    if response.status_code == 200:
         
+        data = response.json()
+        
+        # If no incidents are found
+        if len(data['result']) == 0:
+            print("No incidents found for the user.")
+            continue
+        
+        # Output required fields for each incident
+        for incident in data['result']:
+            incident_number = incident.get("number")
             
-            playbook = generate_ansible_playbook(incident.get("short_description"), use_gpu=use_gpu)
-            
-            output = {
-                "short_description": incident.get("short_description"),
-                "description": incident.get("description"),
-                "number": incident.get("number"),
-                "state": incident.get("state"),
-                "suggested_playbook": playbook
-            }
-            print("\n\nIncident details:")
-            print("Description: ", output["short_description"])
-            print("Incident Number: ", output["number"])
-            print("\n\nSuggested playbook:")
-            print("Playbook: ", playbook)
+            # Check if incident is already processed
+            if incident_number in seen_instances:
+                continue  # Skip if already seen
+            else:
+                seen_instances.add(incident_number)  # Mark incident as seen
 
-else:
-    print(f"Error: {response.status_code}, {response.text}")
+                description = incident.get("description")
+                short_description = incident.get("short_description")
 
-if github_token != "":
-    i=10
-    for output in outputs:
-        upload_new_playbook_to_repo(BRANCH_NAME, file_path.split('.')[0]+str(i)+'.yaml', output["suggested_playbook"], GITHUB_API_URL, github_token)
-        i+=1
+  
+                playbook = generate_ansible_playbook(description, use_gpu=use_gpu)
+                playbook_filename = f"playbook_{incident_number}.yml"
+
+
+                # Save the playbook to the output directory in the Git repository
+                repo_path = os.path.abspath('.')
+                saved_directory = os.path.join(repo_path, out_directory)
+                os.makedirs(saved_directory, exist_ok=True)
+                playbook_path = os.path.join(saved_directory, playbook_filename)
+
+                with open(playbook_path, 'w') as f:
+                    f.write(playbook)
+
+                # Commit and push the new playbook to the Git repository
+                subprocess.run(['git', 'add', playbook_path], cwd=repo_path)
+                subprocess.run(['git', 'commit', '-m', f'Add playbook for incident {incident_number}'], cwd=repo_path)
+                subprocess.run(['git', 'push', 'origin', branch], cwd=repo_path)
+
+                # Trigger project update in AWX to sync the latest playbooks
+                project_id = int(os.getenv("PROJECT_ID"))
+                trigger_project_update(project_id)
+
+                # Set playbook path for AWX
+                awx_playbook_path = f"{out_directory}/{playbook_filename}"
+
+                # Use AWX to run the playbook
+                job_template_id = create_job_template(awx_playbook_path)
+                job_id = launch_job(job_template_id)
+                job_status = track_job(job_id)
+
+                # Output the result details
+                output = {
+                    "short_description": short_description,
+                    "description": description,
+                    "number": incident_number,
+                    "state": incident.get("state"),
+                    "suggested_playbook": playbook,
+                    "job_status": job_status
+                }
+                print("\n\nIncident details:")
+                print("User: ", user_name)
+                print("Description: ", output["short_description"])
+                print("Incident Number: ", output["number"])
+                print("\n\nSuggested playbook:")
+                print("Playbook:\n", playbook)
+                print(f"\nJob completed with status: {job_status}")
+
+    else:
+        print(f"Error: {response.status_code}, {response.text}")
+
+    # Wait 0.2 seconds before checking for new incidents again
+    time.sleep(0.2)
