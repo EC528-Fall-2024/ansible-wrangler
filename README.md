@@ -23,11 +23,14 @@
 ## Setup
 Install Ollama and run it using "ollama serve" on terminal
 
-conda env create -f environment.yml
+
 
 if you have a gpu:
+conda env create -f environment.yml
 conda activate faiss_env
+
 else:
+conda env create -f environment_cpu.yml
 conda activate faiss_env_cpu
 
 python main.py
