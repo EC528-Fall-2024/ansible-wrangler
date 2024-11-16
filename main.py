@@ -51,11 +51,12 @@ else:
     exit()
 
 # Updated filter query using the sys_id
-filter_query = f"caller_id={caller_sys_id}^active=true^universal_requestISEMPTY"
+filter_query = f"caller_id={caller_sys_id}^active=true^universal_requestISEMPTY&sysparm_fields=number,short_description,state,description,sys_id"
 url = instance + endpoint + "?sysparm_query=" + filter_query
 seen_instances = set()
 # Fetch incident data
 while True:
+    
     response = requests.get(url, headers=headers, auth=HTTPBasicAuth(username, password))
 
     if response.status_code == 200:
@@ -70,17 +71,29 @@ while True:
         # Output required fields for each incident
         for incident in data['result']:
             incident_number = incident.get("number")
-            
+            incident_state = incident.get("state")
+            incident_sys_id = incident.get("sys_id")
             # Check if incident is already processed
-            if incident_number in seen_instances:
+            if incident_state in ["4","5","6"] :
+                continue
+            if incident_number in seen_instances and incident_state != 1:
                 continue  # Skip if already seen
             else:
+
+                update_url = instance + endpoint + '/' + incident_sys_id
+                print(update_url)
+                payload = {
+                    'state' : 2,
+                    'comments': 'testing'
+                }
+                response = requests.patch(update_url, json=payload, headers=headers, auth=HTTPBasicAuth(username, password))
+                if response.status_code != 200: 
+                    print('Status:', response.status_code, 'Headers:', response.headers, 'Error Response:',response.json())
                 seen_instances.add(incident_number)  # Mark incident as seen
 
                 description = incident.get("description")
                 short_description = incident.get("short_description")
 
-  
                 playbook = generate_ansible_playbook(description, use_gpu=use_gpu)
                 playbook_filename = f"playbook_{incident_number}.yml"
 
@@ -133,3 +146,4 @@ while True:
 
     # Wait 0.2 seconds before checking for new incidents again
     time.sleep(0.2)
+    
