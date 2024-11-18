@@ -1,9 +1,16 @@
 ---
 - name: Print AWX
-  hosts: all
+  hosts: localhost
   become: yes
 
   tasks:
-  - debug:
-      msg: "{{ item }}" | json
-    loop: [AWX]
+  - name: Get AWX version
+    shell: |
+      echo "AWX Version" > /root/awx_version
+    notify: print awx
+
+  - name: Print AWX
+    shell: |
+      cat /root/awx_version
+    when: awx_version is defined and not empty
+    notify: print awx
