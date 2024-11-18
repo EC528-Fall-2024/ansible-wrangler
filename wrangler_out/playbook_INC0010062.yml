@@ -1,9 +1,17 @@
 ---
 - name: Print AWX
   hosts: all
-  become: yes
+  become: true
 
   tasks:
-  - name: Check AWX version
-    shell: |
-        echo "AWX (Ubuntu/Debian) is {{ AWX.__version__ }}"
+  - name: Get AWX configuration file
+    shell: cat /etc/awx/awx.conf
+    register: awx_conf
+
+  - name: Print AWX configuration file contents
+    debug: msg="{{ awx_conf.stdout }}" 
+
+  - name: Restart AWX service
+    service:
+      name: awx
+      state: restarted
