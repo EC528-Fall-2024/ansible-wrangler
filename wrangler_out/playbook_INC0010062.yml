@@ -4,6 +4,6 @@
   become: yes
 
   tasks:
-  - name: Print AWX
-    debug:
-      msg: 'AWX is {{ item }}'
+  - debug:
+      msg: "{{ item }}" | json
+    loop: [AWX]
