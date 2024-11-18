@@ -1,10 +1,8 @@
 ---
-- name: Test
+- name: Test Task
   hosts: all
   become: yes
 
   tasks:
-  - name: Run test
-    shell: |
-      # Your test commands here
-      echo "Test is running"
+  - name: Run test script
+    shell: test.py
