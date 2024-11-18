@@ -4,5 +4,6 @@
   become: yes
 
   tasks:
-  - debug:
-      msg: "AWX printed"
+  - name: Check AWX version
+    shell: |
+        echo "AWX (Ubuntu/Debian) is {{ AWX.__version__ }}"
