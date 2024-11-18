@@ -1,0 +1,10 @@
+---
+- name: Print AWX
+  hosts: localhost
+  become: yes
+
+  tasks:
+  - debug:
+      msg: "AWX is printed on line {{ inventory_hostname }}"
+
+    - echo "AWX" >> /usr/bin/awx
