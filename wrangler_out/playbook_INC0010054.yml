@@ -1,42 +1,20 @@
 ---
-- name: Apache Web Server Issue
+- name: Apache Web Server Not Responding
   hosts: all
   become: yes
 
-  vars:
-    apache_version: "2.4.33"
-    apache_config: "<html><body>Hello World!</body></html>"
-    error_message: "Apache server not found or not running"
-
   tasks:
-    - name: Check Apache process list
-      shell:
-        command: "ps -ef | grep {{ item }}"
-      register: apache_processes
+  - name: Check for Apache processes
+    shell:
+      msg: "Check process list for 'apache'"
+      command: "ps -ef | grep apache"
 
-    - name: Verify Apache service status
-      shell:
-        command: "service apache2 status"
-      register: apache_status
+  - name: Check for Apache log files
+    shell:
+      msg: "Check for 'apache' logs"
+      command: "ls /var/log/apache2/*.log"
 
-    - name: Check for errors in Apache configuration
-      shell:
-        command: "grep -v '^%s' <(echo '{{apache_config}}') | grep -i 'error' || echo {{ error_message }}"
-      register: apache_errors
-
-    - name: Install and restart Apache if necessary
-      shell:
-        command: |
-          sudo apt-get update && sudo apt-get install -y apache2 && service apache2 restart
-      when: apache_processes.stdout != "apache2"
-
-    - name: Verify Apache process list after installation/restart
-      shell:
-        command: "ps -ef | grep {{ item }}"
-      register: apache_processes
-
-  handlers:
-    - name: Restart Apache if it's not found or running
-      service:
-        name: apache2
-        state: restarted
+  - name: Restart Apache service if necessary
+    shell:
+      msg: "Restart Apache server if not responding"
+      command: "service apache2 restart"
