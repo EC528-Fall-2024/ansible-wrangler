@@ -1,17 +1,17 @@
 ---
-- name: Apache Web Server Not Responding
-  hosts: localhost
-  gather_facts: no
+- name: Restart Apache
+  hosts: all
+  become: yes
 
   tasks:
-  - name: Check Apache Status
-    debug:
-      msg: "{{ item }}" | type="info"
-    with_items:
-      - "Apache is not running."
-      - "Apache is not listening on port 80."
+  - name: Check Apache status
+    command: "service apache2 status"
+    register: apache_status
 
-  - name: Restart Apache
+  - name: Restart Apache if not running
     service:
       name: apache2
       state: restarted
+      enabled: no
+    when:
+      - not apachestatus.stat.exists()
