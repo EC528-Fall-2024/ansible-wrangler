@@ -22,19 +22,3 @@ if ! command -v conda &> /dev/null; then
 else
     echo "Conda is already installed."
 fi
-
-# Create the Conda environment from environment.yml if it exists
-if [ -f "environment.yml" ]; then
-    echo "Creating Conda environment from environment.yml..."
-    conda env create -f environment.yml
-else
-    echo "No environment.yml found, skipping Conda environment creation."
-fi
-
-# Activate the Conda environment
-echo "Activating Conda environment 'faiss_env'..."
-conda activate faiss_env
-
-# Run main.py
-echo "Running main.py..."
-python main.py
