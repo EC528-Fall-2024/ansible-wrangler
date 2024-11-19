@@ -1,27 +1,22 @@
 ---
-- name: Check Apache Process List
+- name: Apache Web Server Issue
   hosts: all
   become: yes
 
+  roles:
+    - install.apache2
+
   tasks:
-  - name: Check Apache process list
-    shell:
-      command: "ps aux | grep apache"
-    register: apache_processes
+  - debug:
+      msg: "Apache process is not showing in the process list"
 
-  - name: Get available CPU
-    docker:
-      image: busybox
-      command: "top -n 1 --noheader --sort=-%cpu | awk '{print $2}'"
-    register: available_cpu
+  - wait_for:
+      uri: http://localhost:8080/status
+      timeout: 10
+      retries: 3
+      period: 1
 
-  - name: Check Apache process list with available CPU
-    shell:
-      command: "ps aux | grep apache && ps aux | grep busybox"
-    when: "apache_processes.stdout == '' or available_cpu.stdout == 'none'"
-    register: apache_processes
-
-  - name: Print Apache processes and available CPU
-    debug:
-      var: apache_processes.stdout
-      var: available_cpu.stdout
+  - get:
+      uri: https://localhost:8080/pid
+      dest: /tmp/apache_pid
+      mode: '0644'
