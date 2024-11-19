@@ -1,13 +1,26 @@
 ---
-- name: Check Apache Web Server Status
-  hosts: localhost
-  become: yes
-
-  roles:
-    - ansible-role-apache
+- name: Check Apache Service
+  hosts: all
+  become: true
 
   tasks:
     - name: Check Process List for Apache
       shell:
-        command: "ps aux | grep httpd"
-        when: "ansible_distribution == 'centos' or ansible_distribution == 'redhat'"
+        command: "service apache2 status"
+      register: apache_status
+
+    - name: Check Status of Apache
+      set_fact:
+        apache_status: "{{ apache_status.stdout | trim() }}"
+
+    - name: Set Fact if Apache is Down
+      when: not apache_status
+      set_fact:
+        apache_down: true
+
+    - name: Restart Apache Service
+      become: yes
+      service:
+        name: apache2
+        state: stopped
+        enabled: yes
