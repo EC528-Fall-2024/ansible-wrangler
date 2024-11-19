@@ -3,15 +3,17 @@
   hosts: all
   become: yes
 
+  vars:
+    server_name: your-server-name
+    port: http
+
   tasks:
+    - name: Get process list
+      get_process_list:
+        path: /proc/self/fd/{{ port }}
+        status: running
+        quiet: no
+
     - name: Check Apache process list
-      shell:
-        cmd:"pgrep -f 'apache'"
-      register: apache_status
-
-    - debug:
-        msg: "Apache status found"
-        when: apache_status.stdout is not defined
-
-    - when: apache_status.status != 0
-      action: reboot
+      debug:
+        var: apache_pids
