@@ -1,18 +1,13 @@
 ---
-- name: Apache Webserver not responsive
-  hosts: localhost
+- name: Apache Server Not Responding
+  hosts: all
   become: yes
 
   tasks:
-  - name: Check Apache status
-    uri:
-      url: https://example.com/httpd-status
-      method: GET
-      status_code: 200
-      debug: True
+  - name: Check system logs
+    debug:
+      msg: "{{ item }}"
 
-  - name: Verify Apache process list
-    uri:
-      url: http://localhost/state/applications
-      method: GET
-      debug: True
+  - name: Show Apache process list
+    shell:
+      command: "ps aux | grep httpd"
