@@ -1,13 +1,32 @@
 ---
-- name: Apache Web Server Not Responding
-  hosts: all
+- name: Check Apache Status
+  hosts: localhost
   become: yes
 
-  roles:
-    - installation
+  vars:
+    apache_port: 80
+    apache_protocol: http
 
   tasks:
-    - name: Check if apache process is running
-      shell:
-        path: /var/log/apache2/available.log
-        state: file.exists
+    - name: Get Apache Status
+      command: "ps aux | grep {{ item }}"
+      register: apache_status
+
+    - name: Check for Running Processes
+      case:
+        when apache_status.stdout contains "{{ apache_protocol }}://":
+          debug: msg="Apache is running, {{ item }}"
+        when notapache_status.stdout contains "{{ apache_protocol }}://":
+          debug: msg="No Apache process found for {{ item }}, check logs"
+
+    - name: Restart Apache if required
+      when: apache_status.stdout contains "{{ apache_protocol }}://"
+      block:
+        - name: Service Restart
+          service:
+            name: apache2
+            state: restarted
+
+  handlers:
+    - name: restart_apache
+      command: "service {{ item }} restart"
