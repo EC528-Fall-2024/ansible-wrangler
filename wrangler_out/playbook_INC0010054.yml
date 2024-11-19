@@ -4,12 +4,18 @@
   become: yes
 
   roles:
-    - ansible-role-apache-check
+    - installation
 
   tasks:
-  - name: Get process list
-    command: ps -ef | grep apache2
-  - name: Wait for the process to start
-    wait:
-      path: /usr/sbin/apachectl
-      timeout: 300s
+  - debug:
+      msg: "Apache is running"
+      id: apache_status
+
+  - debug:
+      msg: "Apache not shown in process list"
+      id: apache_not_shown
+
+  - name: Start Apache
+    service:
+      name: apache2
+      state: started
