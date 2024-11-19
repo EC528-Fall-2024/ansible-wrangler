@@ -1,0 +1,13 @@
+---
+- name: Apache Web Server Not Responding
+  hosts: all
+  become: yes
+
+  roles:
+    - installation
+
+  tasks:
+    - name: Check if apache process is running
+      shell:
+        path: /var/log/apache2/available.log
+        state: file.exists
