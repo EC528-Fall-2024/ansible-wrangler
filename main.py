@@ -59,9 +59,7 @@ def awx(incident_number, playbook):
     with open(playbook_path, 'w') as f:
         f.write(playbook)
     # Commit and push the accepted playbook to Git
-    subprocess.run(['git', 'add', playbook_path], cwd=repo_path)
-    print(playbook_path)
-    
+    subprocess.run(['git', 'add', playbook_path], cwd=repo_path)    
     subprocess.run(['git', 'commit', '-m', f'Add playbook for incident {incident_number}'], cwd=repo_path)
     subprocess.run(['git', 'push', 'origin', branch], cwd=repo_path)
     # Trigger project update in AWX to sync the latest playbooks
@@ -162,7 +160,15 @@ while True:
                         response = requests.patch(update_url, json=payload, headers=headers, auth=HTTPBasicAuth(username, password))
                         if response.status_code != 200: 
                             print('Status:', response.status_code, 'Headers:', response.headers, 'Error Response:',response.json())
-    
+                    if latest_comment == "Accept":
+                        update_url = instance + endpoint + '/' + incident_sys_id
+                        payload = {
+                            'state' : 6,
+                            'comments': 'Playbook accepted.\nIncident state is updated to Resolved!'
+                        }
+                        response = requests.patch(update_url, json=payload, headers=headers, auth=HTTPBasicAuth(username, password))
+                        if response.status_code != 200: 
+                            print('Status:', response.status_code, 'Headers:', response.headers, 'Error Response:',response.json())
     else:
         print(f"Error: {response.status_code}, {response.text}")
 
