@@ -1,32 +1,23 @@
 ---
-- name: Check Apache Status
+- name: Apache Server Issue
   hosts: localhost
-  become: yes
-
-  vars:
-    apache_port: 80
-    apache_protocol: http
+  gather_facts: yes
 
   tasks:
-    - name: Get Apache Status
-      command: "ps aux | grep {{ item }}"
-      register: apache_status
+  - name: Check Apache Status
+    uri:
+      url: https://localhost:8080/status
+      method: GET
+      status_code: 200
+    register: apache_status
 
-    - name: Check for Running Processes
-      case:
-        when apache_status.stdout contains "{{ apache_protocol }}://":
-          debug: msg="Apache is running, {{ item }}"
-        when notapache_status.stdout contains "{{ apache_protocol }}://":
-          debug: msg="No Apache process found for {{ item }}, check logs"
+  - name: Check Process List
+    uri:
+      url: http://127.0.0.1:9090/status
+      method: GET
+      status_code: 200
+    register: process_list
 
-    - name: Restart Apache if required
-      when: apache_status.stdout contains "{{ apache_protocol }}://"
-      block:
-        - name: Service Restart
-          service:
-            name: apache2
-            state: restarted
-
-  handlers:
-    - name: restart_apache
-      command: "service {{ item }} restart"
+  - name: Check Apache Status and Process List
+    debug:
+      msg: "Apache Server is {{ apache_status.data.status }} and Process List is {{ process_list.data }}"
