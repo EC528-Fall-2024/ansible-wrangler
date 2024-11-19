@@ -1,20 +1,23 @@
 ---
-- name: Apache Web Server Not Responding
-  hosts: all
+- name: Apache Web Server Check
+  hosts: localhost
   become: yes
 
+  roles:
+    - ansible-role-apache
   tasks:
-  - name: Check for Apache processes
-    shell:
-      msg: "Check process list for 'apache'"
-      command: "ps -ef | grep apache"
-
-  - name: Check for Apache log files
-    shell:
-      msg: "Check for 'apache' logs"
-      command: "ls /var/log/apache2/*.log"
-
-  - name: Restart Apache service if necessary
-    shell:
-      msg: "Restart Apache server if not responding"
-      command: "service apache2 restart"
+   - name: "Check Apache status"
+     uri: http://localhost:9000/status
+     register: status
+   - when: status.success is False
+   - name: "Check if process list shows 'apache'"
+     uri: http://localhost:9001/check
+     register: apache_list
+   - when: apache_list.success is False
+   - name: "Take action if Apache not found"
+     uri: http://localhost:9002/check
+     register: apache_found
+   - when: apache_found.success is False
+   - name: "Install and start Apache"
+     uri: http://localhost:9003/install
+     notify: restart apache
