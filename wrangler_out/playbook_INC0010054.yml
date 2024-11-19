@@ -1,21 +1,15 @@
 ---
-- name: Check Apache Status
-  hosts: localhost
-  gather_facts: yes
+- name: Apache Web Server Check
+  hosts: all
+  become: yes
 
   roles:
-    - { name: apache }
-    - { name: dns }
-    - { name: selinux }
+    - install.apache
 
   tasks:
-  - debug:
-      msg: "Apache Process List:"
-  - debug:
-      msg: "{{ item }}"
-    with_items:
-      - "Apache process list"
-  - debug:
-      msg: "Apache is not shown in the process list:"
-  - debug:
-      msg: "Apache is running, but no processes are showing up."
+  - block:
+      - name: Wait forapache to finish
+        wait_for:
+          timeout: 10m
+          path: /var/log/apache2/error.log
+      - include: apache.yml
