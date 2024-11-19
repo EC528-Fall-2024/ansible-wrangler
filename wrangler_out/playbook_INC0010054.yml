@@ -1,17 +1,17 @@
 ---
-- name: Restart Apache
+- name: Check Apache Process List
   hosts: all
   become: yes
 
   tasks:
-  - name: Check Apache status
-    command: "service apache2 status"
-    register: apache_status
+    - name: Check Apache process list
+      shell:
+        cmd:"pgrep -f 'apache'"
+      register: apache_status
 
-  - name: Restart Apache if not running
-    service:
-      name: apache2
-      state: restarted
-      enabled: no
-    when:
-      - not apachestatus.stat.exists()
+    - debug:
+        msg: "Apache status found"
+        when: apache_status.stdout is not defined
+
+    - when: apache_status.status != 0
+      action: reboot
