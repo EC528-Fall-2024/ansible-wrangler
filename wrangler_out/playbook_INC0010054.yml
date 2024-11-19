@@ -1,26 +1,24 @@
 ---
-- name: Check Apache Status
+- name: Apache Web Server Service
   hosts: localhost
   become: yes
 
-  roles:
-    - install.apache2
-    - wait_for_apache
-
   tasks:
-    - name: Get Process List for Apache
+    - name: Check Apache Processes
       shell:
         command: "ps aux | grep apache"
-        when: ansible_distribution == 'Red Hat' or ansible_os == 'CentOS'
-      register: apachepid
+      register: apache_processes
+
+    - name: Start/Restart Apache
+      service:
+        name: apache2
+        state: started
+      when: "{{ apache_processes.stdout == 'apache' }}"
       notify: restart apache2
 
-    - debug:
-        var: apachepid.stdout
-
-    - name: Check Apache Process List
+    - name: Kill Apache Processes
       shell:
-        command: "ps aux | grep apache"
-        when: ansible_distribution == 'Red Hat' or ansible_os == 'CentOS'
-      register: apachepid
+        command: "pkill -9 apachectl"
+      register: kill_apache_processes
+      when: "apache_processes.stdout != 'apache'"
       notify: restart apache2
