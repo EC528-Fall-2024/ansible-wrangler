@@ -1,19 +1,62 @@
 ---
-- name: Check Apache Process List
+- name: Apache Web Server Not Responding
   hosts: all
   become: yes
 
   vars:
-    server_name: your-server-name
-    port: http
+    apache_port = 80
+    httpd_config_file = "/etc/httpd/conf.d/apache.conf"
 
   tasks:
-    - name: Get process list
-      get_process_list:
-        path: /proc/self/fd/{{ port }}
-        status: running
-        quiet: no
 
-    - name: Check Apache process list
-      debug:
-        var: apache_pids
+  - name: Check process list for apache
+    shell:
+      state: present
+      command: "ps -ef | grep httpd"
+    register: apache_process
+
+  - name: Check if apache is running in all hosts
+    debug:
+      msg: "{{ item }}"
+      var: apache_process.results[0]
+
+  - name: Start or restart apache if not running
+    command:
+      state: present
+      enabled: false
+      shell: "service httpd start"
+    when: not apache_process.results[0]
+    if: ansible_distribution == 'centos' and ansible_os_version in ['7', '8']
+
+  - name: Restart apache if it's not running after initial check
+    command:
+      state: redefined
+      enabled: false
+      shell: "service httpd restart"
+    when: not apache_process.results[0]
+    if: ansible_distribution == 'centos' and ansible_os_version in ['7', '8']
+
+  - name: Check process list for httpd
+    shell:
+      state: present
+      command: "ps -ef | grep httpd"
+    register: httpd_process
+
+  - name: Check if httpd is running in all hosts
+    debug:
+      msg: "{{ item }}"
+      var: httpd_process.results[0]
+
+  - name: Stop or reload httpd if not running
+    command:
+      state: absent
+      enabled: false
+      shell: "service httpd stop"
+    when: not httpd_process.results[0]
+    if: ansible_distribution == 'centos' and ansible_os_version in ['7', '8']
+
+  - name: Reload httpd configuration
+    command:
+      state: redefined
+      enabled: true
+      shell: "/etc/init.d/httpd reload"
