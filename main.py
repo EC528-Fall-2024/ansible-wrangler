@@ -116,7 +116,14 @@ while True:
                     update_url = instance + endpoint + '/' + incident_sys_id
                     payload = {
                         'state' : 2,
-                        'comments': 'Hello,\n\nWe have received your incident and are currently in the process of generating the playbook. Once it\'s ready, you will be able to review it and decide whether it works for your needs.\n\nIf you are satisfied with the generated playbook, please change the incident state to Resolved.\nIf the playbook does not meet your needs, simply write the comment "Regenerate", and I will regenerate the playbook for you.\n\nThank you for your patience!'
+                        'comments': (
+                            'Hello,\n\nWe have received your incident and are currently in the process of generating the playbook. '
+                            'Once the playbook is ready, we will validate it using AWX and then send it to you for review. '
+                            'You have two options:\n'
+                            '- Send "Accept" if the playbook meets your needs, and we will change the incident state to Resolved.\n'
+                            '- Send "Regenerate" if the playbook does not meet your requirements, and we will generate a new one.\n\n'
+                            'Thank you for your patience!'
+                        )
                     }
                     response = requests.patch(update_url, json=payload, headers=headers, auth=HTTPBasicAuth(username, password))
                     if response.status_code != 200: 
@@ -127,7 +134,14 @@ while True:
                         playbook = process_playbook(description, incident_number,use_gpu=use_gpu)
                         job_status = awx(incident_number,playbook)
                     payload = {
-                        'comments': playbook
+                        'comments': (
+                            'The playbook has been generated and validated. Here it is:\n\n'
+                            f'{playbook}\n\n'
+                            'You have two options:\n'
+                            '- Send "Accept" if this playbook works for you, and we will resolve the incident.\n'
+                            '- Send "Regenerate" if this does not meet your requirements, and we will generate a new one.\n\n'
+                            'Looking forward to your response!'
+                        )
                     }
                     response = requests.patch(update_url, json=payload, headers=headers, auth=HTTPBasicAuth(username, password))
                     if response.status_code != 200: 
@@ -144,7 +158,14 @@ while True:
                     if latest_comment == "Regenerate":
                         update_url = instance + endpoint + '/' + incident_sys_id
                         payload = {
-                            'comments': 'We have received your feedback. Please be patient, and we will create another playbook.'
+                            'comments': (
+                                'The playbook has been generated and validated. Here it is:\n\n'
+                                f'{playbook}\n\n'
+                                'You have two options:\n'
+                                '- Send "Accept" if this playbook works for you, and we will resolve the incident.\n'
+                                '- Send "Regenerate" if this does not meet your requirements, and we will generate a new one.\n\n'
+                                'Looking forward to your response!'
+                            )
                         }
                         response = requests.patch(update_url, json=payload, headers=headers, auth=HTTPBasicAuth(username, password))
                         if response.status_code != 200: 
@@ -164,7 +185,7 @@ while True:
                         update_url = instance + endpoint + '/' + incident_sys_id
                         payload = {
                             'state' : 6,
-                            'comments': 'Playbook accepted.\nIncident state is updated to Resolved!'
+                            'comments': 'Thank you for accepting the playbook. Since you approved it, we are changing the incident state to Resolved.'
                         }
                         response = requests.patch(update_url, json=payload, headers=headers, auth=HTTPBasicAuth(username, password))
                         if response.status_code != 200: 
