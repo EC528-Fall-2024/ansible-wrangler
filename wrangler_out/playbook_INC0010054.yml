@@ -1,44 +1,18 @@
 ---
-- name: Apache Web Server Not Responding
-  hosts: all
+- name: Apache Webserver not responsive
+  hosts: localhost
   become: yes
 
   tasks:
-    - name: Check Apache Process List
-      shell:
-        command: "pgrep apache2"
-        when: "apache2 is running"
+  - name: Check Apache status
+    uri:
+      url: https://example.com/httpd-status
+      method: GET
+      status_code: 200
+      debug: True
 
-    - name: Start and Enable Apache Service
-      template:
-        src: templates/service.yml.j2
-        dest: /etc/systemd/system/apache2.service
-        mode: '0644'
-      notify: restart apache
-
-    - name: Enable and Start Apache Service
-      template:
-        src: templates/service.yml.j2
-        dest: /etc/systemd/system/apache2.service
-        mode: '0644'
-      notify: start apache
-
-    - name: Restart Apache Service
-      service:
-        name: apache2
-        state: restarted
-      notify: restart apache
-
-    - name: Start and Enable Apache Service by Default
-      template:
-        src: templates/service.yml.j2
-        dest: /etc/systemd/system/apache2.service
-        mode: '0644'
-      notify: start apache
-
-    - name: Enable and Start Apache Service by Default
-      template:
-        src: templates/service.yml.j2
-        dest: /etc/systemd/system/apache2.service
-        mode: '0644'
-      notify: start apache
+  - name: Verify Apache process list
+    uri:
+      url: http://localhost/state/applications
+      method: GET
+      debug: True
