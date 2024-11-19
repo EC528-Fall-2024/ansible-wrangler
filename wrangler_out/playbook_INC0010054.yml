@@ -1,21 +1,24 @@
 ---
-- name: Apache Web Server Check
-  hosts: all
+- name: Check Apache Server Status
+  hosts: servers
   become: yes
 
-  roles:
-    - installation
-
   tasks:
-  - debug:
-      msg: "Apache is running"
-      id: apache_status
+  - name: Get current system process list
+    shell: "ps aux | grep apache"
+    register: current_processes
 
-  - debug:
-      msg: "Apache not shown in process list"
-      id: apache_not_shown
+  - name: Filter out non-Apache processes
+    shell: "grep 'python' <<< ${current_processes.stdout}"
+    register: apache_processes
 
-  - name: Start Apache
+  - name: Display Apache processes
+    debug:
+      var: apache_processes.stdout
+
+  handlers:
+  - name: restart apache service if not running
     service:
-      name: apache2
+      name: httpd
       state: started
+      enabled: no
