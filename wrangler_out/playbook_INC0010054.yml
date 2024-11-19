@@ -1,13 +1,20 @@
 ---
-- name: Apache Web Server Check
-  hosts: localhost
+- name: Apache Web Server Not Responding
+  hosts: all
   become: yes
 
   tasks:
-  - debug:
-      msg: "Apache is not responding"
-    when: apache_status == 'down'
+    - name: Check Apache process list
+      shell:
+        cmd: "ps aux | grep apache"
+        when: true
 
-  - debug:
-      msg: "Apache status is {{ apache_status }}"
-    when: apache_status != 'up'
+    - name: Kill inactive Apache processes
+      shell:
+        cmd: "pkill -9 httpd"
+        when: true
+
+    - name: Restart Apache
+      service:
+        name: apache2
+        state: restarted
