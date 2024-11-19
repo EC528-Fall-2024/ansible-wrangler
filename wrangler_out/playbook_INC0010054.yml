@@ -3,21 +3,13 @@
   hosts: all
   become: yes
 
-  vars:
-    apache_port = 80
-    https_port = 443
+  roles:
+    - ansible-role-apache-check
 
   tasks:
-    - name: Start Apache if not running
-      service:
-        name: apache2
-        state: started
-        enabled: yes
-
-    - name: Get process list
-      command: /usr/sbin/service -s status | tail -n +3
-      register: apache_status
-
-    - name: Check for Apache processes
-      debug:
-        msg: "Apache is not running. Is the web server installed and configured? {{ apache_status.stdout }}"
+  - name: Get process list
+    command: ps -ef | grep apache2
+  - name: Wait for the process to start
+    wait:
+      path: /usr/sbin/apachectl
+      timeout: 300s
