@@ -1,26 +1,27 @@
 ---
-- name: Check Apache Service
-  hosts: all
-  become: true
+- name: Apache Web Server Issues
+  hosts: webserver
+  become: yes
 
   tasks:
-    - name: Check Process List for Apache
-      shell:
-        command: "service apache2 status"
-      register: apache_status
+  - name: Check the httpd.conf file for any errors or issues
+    template:
+      src: templates/httpd.conf.j2
+      dest: /etc/apache2/httpd.conf.d/httpd.conf
+      mode: '0644'
 
-    - name: Check Status of Apache
-      set_fact:
-        apache_status: "{{ apache_status.stdout | trim() }}"
+  - name: Check the error log files for any messages indicating Apache is not running
+    stat:
+      path: "/var/log/apache2/error.log"
+      state: present
 
-    - name: Set Fact if Apache is Down
-      when: not apache_status
-      set_fact:
-        apache_down: true
+  - name: Start and enable the httpd service
+    service:
+      name: apache2
+      state: started
+      enabled: yes
 
-    - name: Restart Apache Service
-      become: yes
-      service:
-        name: apache2
-        state: stopped
-        enabled: yes
+  - name: Restart the httpd service to ensure it starts after changes
+    service:
+      name: apache2
+      state: restarted
