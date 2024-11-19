@@ -1,24 +1,13 @@
 ---
-- name: Apache Web Server Not Responding
-  hosts: all
+- name: Check Apache Web Server Status
+  hosts: localhost
   become: yes
 
+  roles:
+    - ansible-role-apache
+
   tasks:
-  - name: Check Process List
-    shell: "ps aux | grep apache2"
-    register: process_list_output
-
-  - name: Parse Process List Output
-    debug: msg="Process List:\n{{ process_list_output.stdout }}"
-
-  - name: Restart Apache Web Server
-    uri:
-      url: http://localhost:80/status
-      method: GET
-      body: '{"status": "not responding"}'
-      auth:
-        username: root
-        password: root
-
-  - name: Log Restart Event
-    debug: msg="Apache Web Server Restarted Successfully!"
+    - name: Check Process List for Apache
+      shell:
+        command: "ps aux | grep httpd"
+        when: "ansible_distribution == 'centos' or ansible_distribution == 'redhat'"
