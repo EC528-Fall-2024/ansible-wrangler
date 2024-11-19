@@ -1,36 +1,24 @@
 ---
-- name: Apache Webserver Not Responding
+- name: Apache Web Server Not Responding
   hosts: all
   become: yes
 
-  variables:
-    server_name: example.com
-    port_number: 80
-
   tasks:
-  - name: Check Apache Process List
-    shell:
-      command: "ps aux | grep {{ item }}"
-      when: "{{ item == 'apache' }}"
+  - name: Check Process List
+    shell: "ps aux | grep apache2"
+    register: process_list_output
 
-  - name: Start Apache Service
-    service:
-      name: apache2
-      state: started
+  - name: Parse Process List Output
+    debug: msg="Process List:\n{{ process_list_output.stdout }}"
 
-  - name: Enable Apache Service
-    service:
-      name: apache2
-      state: enabled
+  - name: Restart Apache Web Server
+    uri:
+      url: http://localhost:80/status
+      method: GET
+      body: '{"status": "not responding"}'
+      auth:
+        username: root
+        password: root
 
-  - name: Restart Apache Service
-    service:
-      name: apache2
-      state: restarted
-
-  - name: Check Apache Process List Again
-    shell:
-      command: "ps aux | grep {{ item }}"
-      when: "{{ item == 'apache' }}"
-
-  become: no
+  - name: Log Restart Event
+    debug: msg="Apache Web Server Restarted Successfully!"
