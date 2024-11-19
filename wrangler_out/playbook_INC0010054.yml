@@ -1,20 +1,23 @@
 ---
-- name: Apache Web Server Not Responding
+- name: Apache Web Server Check
   hosts: all
   become: yes
 
+  vars:
+    apache_port = 80
+    https_port = 443
+
   tasks:
-    - name: Check Apache process list
-      shell:
-        cmd: "ps aux | grep apache"
-        when: true
-
-    - name: Kill inactive Apache processes
-      shell:
-        cmd: "pkill -9 httpd"
-        when: true
-
-    - name: Restart Apache
+    - name: Start Apache if not running
       service:
         name: apache2
-        state: restarted
+        state: started
+        enabled: yes
+
+    - name: Get process list
+      command: /usr/sbin/service -s status | tail -n +3
+      register: apache_status
+
+    - name: Check for Apache processes
+      debug:
+        msg: "Apache is not running. Is the web server installed and configured? {{ apache_status.stdout }}"
