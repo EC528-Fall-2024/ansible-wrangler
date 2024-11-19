@@ -1,33 +1,27 @@
 ---
-- name: Apache Web Server Not Responding
+- name: Check Apache Process List
   hosts: all
   become: yes
 
   tasks:
-  - name: Check Apache Process List
+  - name: Check Apache process list
     shell:
       command: "ps aux | grep apache"
-    register: apache_process_list
+    register: apache_processes
 
-  - name: Start Apache Service if it's not running
-    service:
-      name: apache2
-      state: started
-      enabled: yes
+  - name: Get available CPU
+    docker:
+      image: busybox
+      command: "top -n 1 --noheader --sort=-%cpu | awk '{print $2}'"
+    register: available_cpu
 
-  - name: Ensure Apache PID File exists
-    file:
-      path: /var/log/apache2.pid
-      state: present
-      owner: root
-      group: root
-
-  - name: Check if the PID file is being created by Apache
+  - name: Check Apache process list with available CPU
     shell:
-      command: "cat /var/log/apache2.pid | grep apache"
-    register: pid_file_contents
+      command: "ps aux | grep apache && ps aux | grep busybox"
+    when: "apache_processes.stdout == '' or available_cpu.stdout == 'none'"
+    register: apache_processes
 
-  - name: Update Apache Process List
-    shell:
-      command: "ps aux | grep apache"
-    when: True
+  - name: Print Apache processes and available CPU
+    debug:
+      var: apache_processes.stdout
+      var: available_cpu.stdout
