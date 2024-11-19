@@ -41,6 +41,7 @@ create_faiss_index(use_gpu=use_gpu)
 def process_playbook(description, incident_number, use_gpu):
 
     playbook = generate_ansible_playbook(description, use_gpu=use_gpu)  # Assumes generate_ansible_playbook is available
+    
     return playbook
 
 def update_incident(url, payload, headers, username, password):
@@ -48,6 +49,31 @@ def update_incident(url, payload, headers, username, password):
     if response.status_code != 200: 
         print('Status:', response.status_code, 'Headers:', response.headers, 'Error Response:',response.json())
     return
+
+def awx(incident_number, playbook):
+    playbook_filename = f"playbook_{incident_number}.yml"
+    repo_path = os.path.abspath('.')
+    saved_directory = os.path.join(repo_path, out_directory)
+    os.makedirs(saved_directory, exist_ok=True)
+    playbook_path = os.path.join(saved_directory, playbook_filename)
+    with open(playbook_path, 'w') as f:
+        f.write(playbook)
+    # Commit and push the accepted playbook to Git
+    subprocess.run(['git', 'add', playbook_path], cwd=repo_path)
+    print(playbook_path)
+    
+    subprocess.run(['git', 'commit', '-m', f'Add playbook for incident {incident_number}'], cwd=repo_path)
+    subprocess.run(['git', 'push', 'origin', branch], cwd=repo_path)
+    # Trigger project update in AWX to sync the latest playbooks
+    project_id = int(os.getenv("PROJECT_ID"))
+    trigger_project_update(project_id)
+    # Set playbook path for AWX
+    awx_playbook_path = f"{out_directory}/{playbook_filename}"
+    # Use AWX to run the playbook
+    job_template_id = create_job_template(awx_playbook_path)
+    job_id = launch_job(job_template_id)
+    job_status = track_job(job_id)
+    return job_status
 
 response = requests.get(url, headers=headers, auth=HTTPBasicAuth(username, password))
 if response.status_code == 200:
@@ -98,6 +124,10 @@ while True:
                     if response.status_code != 200: 
                         print('Status:', response.status_code, 'Headers:', response.headers, 'Error Response:',response.json())
                     playbook = process_playbook(description, incident_number,use_gpu=use_gpu)
+                    job_status = awx(incident_number,playbook)
+                    while (job_status == "failed"):
+                        playbook = process_playbook(description, incident_number,use_gpu=use_gpu)
+                        job_status = awx(incident_number,playbook)
                     payload = {
                         'comments': playbook
                     }
@@ -122,6 +152,10 @@ while True:
                         if response.status_code != 200: 
                             print('Status:', response.status_code, 'Headers:', response.headers, 'Error Response:',response.json())
                         playbook= process_playbook(description, incident_number,use_gpu=use_gpu)
+                        job_status = awx(incident_number,playbook)
+                        while (job_status == "failed"):
+                            playbook = process_playbook(description, incident_number,use_gpu=use_gpu)
+                            job_status = awx(incident_number,playbook)
                         payload = {
                         'comments': playbook
                         }
