@@ -1,35 +1,33 @@
 ---
-- name: Apache Web Server Issue
+- name: Apache Web Server Not Responding
   hosts: all
-  become: true
+  become: yes
 
   tasks:
-    - name: Check if Apache is running
-      shell: "systemctl status httpd"
-      register: apache_status
+  - name: Check Apache Process List
+    shell:
+      command: "ps aux | grep apache"
+    register: apache_process_list
 
-    - debug: msg="Apache output:\n${apache_status.stdout}"
+  - name: Start Apache Service if it's not running
+    service:
+      name: apache2
+      state: started
+      enabled: yes
 
-    - name: Restart Apache if not running
-      when: not apache_status.result == 'running'
-      become: true
-      task: restart
+  - name: Ensure Apache PID File exists
+    file:
+      path: /var/log/apache2.pid
+      state: present
+      owner: root
+      group: root
 
-    - name: Check Process List for Apache
-      shell: "ps aux | grep httpd"
-      register: apache_process_list
+  - name: Check if the PID file is being created by Apache
+    shell:
+      command: "cat /var/log/apache2.pid | grep apache"
+    register: pid_file_contents
 
-    - debug: msg="Apache process list:\n${apache_process_list.stdout}"
-
-    - name: Restart Apache if not running from process list
-      when: not apache_process_list.result == 'running'
-      become: true
-      task: restart
-
-    - name: Check Process List for Apache (again)
-      shell: "ps aux | grep httpd"
-      register: apache_process_list_again
-
-    - debug: msg="Apache process list:\n${apache_process_list_again.stdout}"
-
-    - notify: Reload Apache to apply changes
+  - name: Update Apache Process List
+    shell:
+      command: "ps aux | grep apache"
+    when: True
