@@ -1,23 +1,10 @@
 ---
-- name: Apache Server Issue
-  hosts: localhost
-  gather_facts: yes
-
+- name: Apache Web Server Not Responding
+  hosts: all
+  gather_facts: no
   tasks:
-  - name: Check Apache Status
-    uri:
-      url: https://localhost:8080/status
-      method: GET
-      status_code: 200
-    register: apache_status
-
-  - name: Check Process List
-    uri:
-      url: http://127.0.0.1:9090/status
-      method: GET
-      status_code: 200
-    register: process_list
-
-  - name: Check Apache Status and Process List
-    debug:
-      msg: "Apache Server is {{ apache_status.data.status }} and Process List is {{ process_list.data }}"
+    - name: Check Apache Process List
+      shell: "ps aux | grep apache"
+      register: apache_process_list
+    - name: Display Apache Process List
+      debug: var(apache_process_list.stdout)
