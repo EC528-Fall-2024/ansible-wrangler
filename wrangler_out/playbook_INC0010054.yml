@@ -1,66 +1,17 @@
 ---
 - name: Apache Web Server Not Responding
-  hosts: all
-  become: yes
-
-  vars:
-    httpd_config_path=/etc/httpd/conf.d/
-    webserver_name="example.com"
+  hosts: localhost
+  gather_facts: no
 
   tasks:
-    - import_role:
-        names:
-          - httpd
-      register: httpd_module
+  - name: Check Apache Status
+    debug:
+      msg: "{{ item }}" | type="info"
+    with_items:
+      - "Apache is not running."
+      - "Apache is not listening on port 80."
 
-    - name: Set HTTPD Configuration File Path
-      shell:
-        state: present
-        command: echo "{{ httpd_config_path }}" > /etc/httpd/conf.d/my_webserver.conf
-      when: not bool(httpd_module.module_run)
-
-    - name: Check Apache Process List
-      shell:
-        state: content
-        command: cat /proc/<PID>/status | grep "running"
-      register: apache_process_status
-
-    - debug:
-        var: httpd_module.module_run
-        msg: "Apache is up and running"
-
-    - name: Set Apache Module Path
-      shell:
-        state: present
-        command: echo "modules=rewrite,ossfwd" > /etc/httpd/modules.conf
-      when: not bool(httpd_module.module_run)
-
-    - name: Check Apache Process List
-      shell:
-        state: content
-        command: cat /proc/<PID>/status | grep "running"
-      register: apache_process_status
-
-    - debug:
-        var: httpd_module.module_run
-        msg: "Apache is up and running"
-
-    - name: Reload Apache Configuration
-      shell:
-        state: present
-        command: echo 'LoadModule rewrite_module /etc/httpd/modules.load_module' > /etc/httpd/conf.d/my_webserver.conf
-        when: not bool(httpd_module.module_run)
-
-    - debug:
-        var: httpd_module.module_run
-        msg: "Apache is up and running"
-
-  tasks skipped:
-    - debug:
-        msg: Apache process list is empty (default behavior)
-
-- name: Check HTTPD Configuration File Path
-  shell:
-    state: present
-    command: echo "{{ httpd_config_path }}" > /etc/httpd/conf.d/my_webserver.conf
-  when: not bool(httpd_module.module_run)
+  - name: Restart Apache
+    service:
+      name: apache2
+      state: restarted
