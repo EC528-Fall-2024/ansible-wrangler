@@ -1,22 +1,24 @@
 ---
-- name: Check ServiceNow Connectivity
+- name: ServiceNow Login Check
   hosts: localhost
   gather_facts: no
+
   tasks:
-    - name: Test ServiceNow login
+    - name: Attempt to login to ServiceNow using HTTP request
       uri:
-        url: "https://your_instance.service-now.com/api/now/table/incident"
+        url: "https://<instance_name>.service-now.com/api/now/table/sys_user?sysparm_limit=1"
         method: GET
-        user: your_username
-        password: your_password
-        validate_certs: false
+        user: "<username>"
+        password: "{{ service_now_password }}"
+        validate_certs: no
+        status_code: 200
       register: response
 
-    - name: Display response status code
+    - name: Debug the response
       debug:
-        var: response.status_code
+        var: response.status
 
-    - name: Check if login was successful
+    - name: Fail if login is not successful
       fail:
-        msg: "Failed to login to ServiceNow"
-      when: response.status_code != 200
+        msg: "Failed to log in to ServiceNow"
+      when: response.status != 200
