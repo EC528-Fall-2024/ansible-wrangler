@@ -3,13 +3,21 @@
   hosts: all
   become: yes
   tasks:
-    - name: Ensure Apache is installed and started
-      yum:
-        name: httpd
+    - name: Ensure a package is installed
+      apt:
+        name: vim
         state: present
 
-    - name: Start and enable Apache service
-      service:
-        name: httpd
-        state: started
-        enabled: yes
+    - name: Create a directory
+      file:
+        path: /opt/example_dir
+        state: directory
+        mode: '0755'
+
+    - name: Copy a file to the remote host
+      copy:
+        src: files/example.txt
+        dest: /opt/example_dir/example.txt
+        owner: root
+        group: root
+        mode: '0644'
