@@ -1,19 +1,9 @@
 ---
-- name: Ensure Apache Web Server is Running
+- name: Ensure Apache is running
   hosts: all
   become: yes
   tasks:
-    - name: Start Apache service
-      systemd:
-        name: httpd
+    - name: Start Apache if it's not running
+      service:
+        name: apache2
         state: started
-        enabled: yes
-
-    - name: Verify Apache service is running
-      command: systemctl is-active httpd
-      register: apache_status
-      changed_when: false
-
-    - name: Debug Apache service status
-      debug:
-        var: apache_status.stdout
