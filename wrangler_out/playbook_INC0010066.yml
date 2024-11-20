@@ -1,16 +1,21 @@
 ---
-- name: Ensure Apache Web Server is Running
+- name: Ensure Apache is running
   hosts: all
   become: yes
   tasks:
-    - name: Start Apache service if it's not running
+    - name: Start Apache service
       service:
-        name: apache2
+        name: httpd
         state: started
         enabled: yes
 
-    - name: Restart Apache service to ensure it runs properly
+    - name: Verify Apache process is running
+      command: pgrep apache2 || pgrep httpd
+      register: apache_process_check
+      ignore_errors: true
+
+    - name: Restart Apache if not running
       service:
-        name: apache2
+        name: "{{ 'apache2' if ansible_os_family == 'Debian' else 'httpd' }}"
         state: restarted
-        enabled: yes
+      when: apache_process_check.rc != 0
