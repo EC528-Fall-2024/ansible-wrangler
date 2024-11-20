@@ -1,0 +1,14 @@
+---
+- name: Ensure Apache is running
+  hosts: all
+  become: yes
+  tasks:
+    - name: Start Apache if it's not running
+      service:
+        name: httpd
+        state: started
+
+    - name: Enable Apache to start on boot
+      service:
+        name: httpd
+        enabled: yes
