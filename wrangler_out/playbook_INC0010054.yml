@@ -1,13 +1,16 @@
 ---
-- name: Verify Apache Status
+- name: Apache Web Server Issue
   hosts: all
   become: yes
 
+  roles:
+    - installation
+
   tasks:
-  - name: Check Process List
-    command: ps aux | grep "apache"
-  - name: Verify Server Status
-    uri: https://example.com
-    register: apache_status
-    http_code:
-      status_code: 200
+    - name: Check Apache Process List
+      shell:
+        command: ps aux | grep httpd
+      register: apache_process_list
+
+    - debug:
+        var: apache_process_list.stdout_lines
