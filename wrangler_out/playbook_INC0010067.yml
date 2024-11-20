@@ -1,29 +1,14 @@
 ---
-- name: ServiceNow Login Check
-  hosts: localhost
-  gather_facts: no
-  vars:
-    snow_instance: "your_instance_name.service-now.com"
-    snow_username: "your_username"
-    snow_password: "your_password"
-
+- name: Restart ServiceNow Service
+  hosts: servicenow_server
+  become: yes
   tasks:
-    - name: Verify login to ServiceNow
-      uri:
-        url: "https://{{ snow_instance }}/api/now/table/incident?sysparm_limit=1"
-        method: GET
-        user: "{{ snow_username }}"
-        password: "{{ snow_password }}"
-        validate_certs: no
-        status_code: 200
-      register: response
+    - name: Stop ServiceNow service
+      service:
+        name: servicenow
+        state: stopped
 
-    - name: Check if login was successful
-      debug:
-        msg: "Login successful!"
-      when: response.status == 200
-
-    - name: Handle login failure
-      fail:
-        msg: "Failed to log in to ServiceNow"
-      when: response.status != 200
+    - name: Start ServiceNow service
+      service:
+        name: servicenow
+        state: started
