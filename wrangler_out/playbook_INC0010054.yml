@@ -1,27 +1,21 @@
 ---
 - name: Apache Web Server Not Responding
-  hosts: all
+  hosts: localhost
+  gather_facts: no
   become: yes
 
-  vars:
-    httpd_config_path: /etc/httpd/conf.d/
-    httpd_port: 80
-
   tasks:
-    - name: Check process list for Apache
-      shell:
-        args: "-c"
-        when: ansible_distribution == 'Fedora' or ansible_distribution == 'CentOS'
-      register: apache_process_list
-      notify: restartapache
+  - name: Check Apache Process List
+    command: ps -ef | grep httpd
+    register: apache_process_list
 
-    - name: Run command to check if Apache is running
-      shell:
-        args: "systemctl status httpd.{{ item }}"
-      loop: "{{ apache_process_list.stdout |split('\n') }}"
+  - name: Verify Apache Status
+    debug:
+      msg: "{{ apache_process_list.stdout }}"
+    when: apache_process_list.stdout is defined and len(apache_process_list.stdout) > 0
 
-    - name: Restart Apache process if it's not running
-      service:
-        name: httpd.{{ item }}
-        state: restarted
-      when: "item not in ['status', 'running']"
+  - name: Restart Apache Server if not found
+    service:
+      name: httpd
+      state: restarted
+      restart: always
