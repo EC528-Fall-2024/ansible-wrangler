@@ -1,7 +1,10 @@
 name: faiss_env
 channels:
+  - conda-forge
   - pytorch
   - defaults
+  - https://repo.anaconda.com/pkgs/main
+  - https://repo.anaconda.com/pkgs/r
 dependencies:
   - _libgcc_mutex=0.1=main
   - _openmp_mutex=5.1=1_gnu
@@ -29,6 +32,7 @@ dependencies:
   - pip=24.2=py39h06a4308_0
   - pysocks=1.7.1=py39h06a4308_0
   - python=3.9.20=he870216_1
+  - python-dotenv=1.0.1=pyhd8ed1ab_0
   - readline=8.2=h5eee18b_0
   - requests=2.32.3=py39h06a4308_0
   - setuptools=75.1.0=py39h06a4308_0
@@ -80,4 +84,4 @@ dependencies:
       - transformers==4.45.2
       - triton==3.1.0
       - typing-extensions==4.12.2
-prefix: /home/reza/anaconda3/envs/faiss_env
+prefix: /home/ubuntu/local/miniconda3/envs/faiss_env

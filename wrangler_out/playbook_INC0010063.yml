@@ -3,13 +3,39 @@
   hosts: mysql_servers
   become: yes
   tasks:
-    - name: Restart MySQL Service
-      service:
+    - name: Stop MySQL service
+      ansible.builtin.service:
         name: mysqld
-        state: restarted
+        state: stopped
 
-    - name: Ensure MySQL is running
-      service:
+    - name: Check for core dump files
+      ansible.builtin.find:
+        paths: /var/crash
+        patterns: 'core*'
+      register: core_dumps
+
+    - name: Archive core dump files
+      ansible.builtin.copy:
+        src: "{{ item.path }}"
+        dest: "/backup/core_dumps/{{ item.basename }}"
+        remote_src: yes
+      with_items: "{{ core_dumps.files }}"
+
+    - name: Remove original core dump files
+      ansible.builtin.file:
+        path: "{{ item.path }}"
+        state: absent
+      with_items: "{{ core_dumps.files }}"
+
+    - name: Start MySQL service
+      ansible.builtin.service:
         name: mysqld
         state: started
-        enabled: yes
+
+    - name: Check MySQL service status
+      ansible.builtin.service_facts:
+
+    - name: Ensure MySQL is running
+      ansible.builtin.assert:
+        that:
+          - "ansible_facts.services.mysqld.state == 'running'"

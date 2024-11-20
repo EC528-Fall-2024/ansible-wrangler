@@ -1,0 +1,28 @@
+---
+- name: Handle MySQL Database Server Crash
+  hosts: mysql_servers
+  become: yes
+
+  tasks:
+    - name: Restart MySQL Service
+      service:
+        name: mysql
+        state: restarted
+
+    - name: Check MySQL Service Status
+      service_facts:
+
+    - name: Assert MySQL Service is Running
+      assert:
+        that:
+          - ansible_facts.services.mysql.state == 'running'
+        fail_msg: "MySQL service failed to start."
+        success_msg: "MySQL service is running."
+
+    - name: Run MySQL Check Table Operation
+      command: mysqlcheck --all-databases --auto-repair
+      register: check_table_output
+
+    - name: Display Output of Check Table Operation
+      debug:
+        var: check_table_output.stdout_lines
