@@ -1,9 +1,21 @@
 ---
-- name: Ensure Apache is running
+- name: Ensure Apache Web Server is Running
   hosts: all
   become: yes
   tasks:
-    - name: Start Apache if it's not running
+    - name: Start Apache Service
       service:
         name: apache2
         state: started
+        enabled: yes
+
+    - name: Verify Apache Service is Running
+      command: pgrep apache2
+      register: apache_process_check
+      ignore_errors: true
+
+    - name: Restart Apache Service if Not Running
+      service:
+        name: apache2
+        state: restarted
+      when: apache_process_check.rc != 0
