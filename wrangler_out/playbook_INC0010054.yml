@@ -1,22 +1,40 @@
 ---
-- name: Apache Web Server Check
+- name: Apache Server Not Responding
   hosts: all
   become: yes
 
   tasks:
-    - name: Get Process List
-      shell: 'ps aux | grep {{ item }}'
-      register: process_list
+  - name: Check process list for 'apache'
+    shell:
+      command: "ps -ef | grep apache"
+    register: apache_process
 
-    - name: Check Apache Status
-      shell: 'apachectl -n || apachectl -k restart'
-      when: process_list.item != ''
-      async: 10
+  - name: Get PID of running service
+    debug:
+      msg: "PID is {{ apache_process.stdout[0].pid }}"
 
-    - name: Display Results
-      debug:
-        msg: "{{ item | yank }} {{ item }}, {{ process_list.result }}"
+  - name: Stop the Apache Service if it's running
+    service:
+      name: apache
+      state: stopped
+
+  - name: Restart the Apache Service
+    service:
+      name: apache
+      enabled: yes
+      state: restarted
+
+  - name: Get status of Apache process
+    shell:
+      command: "ps -ef | grep apache"
+    register: apache_status
+
+  - name: Check if Apache is running and responding
+    debug:
+      msg: "Apache response is {{ apache_status.stdout[0].status }}"
 
   handlers:
-  - name: apache_server_down_handler
-    shell: 'echo "Apache is down" > /var/log/apache2/error.log'
+  - name: restartapache
+    service:
+      name: apache
+      state: restarted
