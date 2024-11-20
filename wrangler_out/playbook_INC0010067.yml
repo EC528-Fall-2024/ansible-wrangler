@@ -1,29 +1,22 @@
 ---
-- name: ServiceNow Login Verification
+- name: ServiceNow Login Check
   hosts: localhost
   gather_facts: no
-  vars:
-    servicenow_instance: "your_instance"
-    username: "your_username"
-    password: "your_password"
-
   tasks:
-    - name: Get Session ID from ServiceNow
+    - name: Send GET request to ServiceNow instance
       uri:
-        url: "https://{{ servicenow_instance }}.service-now.com/api/now/table/sys_user?sysparm_query=user_name={{ username }}"
+        url: "https://your_instance.service-now.com/api/now/table/incident"
         method: GET
-        user: "{{ username }}"
-        password: "{{ password }}"
-        validate_certs: no
-        status_code: 200
-      register: service_now_response
+        validate_certs: yes
+        user: your_username
+        password: your_password
+        force_basic_auth: yes
+      register: response
 
-    - name: Check if login is successful
+    - name: Display response status code
       debug:
-        msg: "Login successful"
-      when: service_now_response.status == 200
+        var: response.status_code
 
-    - name: Handle login failure
-      fail:
-        msg: "Failed to log in to ServiceNow. Please check your credentials."
-      when: service_now_response.status != 200
+    - name: Display response content
+      debug:
+        var: response.content
