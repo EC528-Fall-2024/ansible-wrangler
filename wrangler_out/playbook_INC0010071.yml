@@ -1,0 +1,12 @@
+---
+- name: Retrieve ServiceNow Username
+  hosts: localhost
+  tasks:
+    - name: Prompt for ServiceNow username
+      ansible.builtin.pause:
+        prompt: "Please enter your ServiceNow username:"
+      register: sn_username
+
+    - name: Display entered ServiceNow username
+      ansible.builtin.debug:
+        msg: "You entered: {{ sn_username.user_input }}"
