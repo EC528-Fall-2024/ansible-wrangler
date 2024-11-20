@@ -3,20 +3,28 @@
   hosts: all
   become: yes
   tasks:
-    - name: Ensure package is installed
+    - name: Update and upgrade apt packages
       apt:
-        name: vim
+        update_cache: yes
+        upgrade: dist
+
+    - name: Install necessary packages
+      apt:
+        name:
+          - vim
+          - curl
         state: present
 
-    - name: Copy configuration file
+    - name: Ensure a directory exists
+      file:
+        path: /opt/example_dir
+        state: directory
+        mode: '0755'
+
+    - name: Copy a file to the remote host
       copy:
-        src: /local/path/to/config/file.conf
-        dest: /etc/config/file.conf
+        src: files/example_file.txt
+        dest: /opt/example_dir/example_file.txt
         owner: root
         group: root
         mode: '0644'
-
-    - name: Restart service
-      systemd:
-        name: example_service
-        state: restarted
