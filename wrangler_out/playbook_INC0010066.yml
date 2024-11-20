@@ -1,9 +1,16 @@
 ---
-- name: Ensure Apache is running
-  hosts: webservers
+- name: Ensure Apache Web Server is Running
+  hosts: all
   become: yes
   tasks:
-    - name: Start Apache service if it's stopped
+    - name: Start Apache service if it's not running
       service:
-        name: httpd
+        name: apache2
         state: started
+        enabled: yes
+
+    - name: Restart Apache service to ensure it runs properly
+      service:
+        name: apache2
+        state: restarted
+        enabled: yes
