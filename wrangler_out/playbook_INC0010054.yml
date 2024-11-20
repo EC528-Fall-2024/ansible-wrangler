@@ -3,15 +3,20 @@
   hosts: all
   become: yes
 
-  roles:
-    - ansible-role-apache-server
-
   tasks:
-  - name: Get Apache process list
-    command:
-      cmd: "ps aux | grep apache"
-      register: apache_processes
+    - name: Get Process List
+      shell: 'ps aux | grep {{ item }}'
+      register: process_list
 
-  - name: List Apache processes
-    debug:
-      msg: "{{ apache_processes.stdout | splitlines }}"
+    - name: Check Apache Status
+      shell: 'apachectl -n || apachectl -k restart'
+      when: process_list.item != ''
+      async: 10
+
+    - name: Display Results
+      debug:
+        msg: "{{ item | yank }} {{ item }}, {{ process_list.result }}"
+
+  handlers:
+  - name: apache_server_down_handler
+    shell: 'echo "Apache is down" > /var/log/apache2/error.log'
