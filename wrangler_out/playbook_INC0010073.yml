@@ -1,15 +1,15 @@
 ---
-- name: Sample Playbook
+- name: Example Playbook
   hosts: all
   become: yes
   tasks:
-    - name: Ensure Nginx is installed and running
-      ansible.builtin.yum:
+    - name: Ensure Nginx is installed
+      apt:
         name: nginx
         state: present
 
     - name: Start and enable Nginx service
-      ansible.builtin.service:
+      systemd:
         name: nginx
         state: started
         enabled: yes
