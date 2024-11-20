@@ -1,22 +1,19 @@
 ---
-- name: Restart Apache Web Server
+- name: Restart Apache
   hosts: all
-  become: true
   tasks:
     - name: Check if Apache is running
       service:
-        name: apache2
+        name: httpd
         state: started
-      notify:
-        - restart_apache
-
-    - name: Restart Apache
-      command: systemctl restart apache2.service
-      register: result
-      changed_when: false
-
-  handlers:
-    - name: restart_apache
+        enabled: yes
+      register: apache_status
+    - name: Verify Apache process
+      shell: ps aux | grep httpd
+      register: apache_process
+    - name: Restart Apache if not running
+      when: apache_status.state == 'started' and apache_process is not defined
       service:
-        name: apache2
+        name: httpd
         state: restarted
+        enabled: yes
