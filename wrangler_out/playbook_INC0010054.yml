@@ -1,21 +1,15 @@
 ---
-- name: Apache Server Not Responding
-  hosts: servers
-  become: yes
-
-  vars:
-    server_name: your-server-name
-    apache_version: "{{ apache_version | default('2.4.53') }}"
-
+- name: Check Apache Status
+  hosts: all
+  become: true
   tasks:
-
-  - name: Check Apache Process List
-    shell:
-      command: "ps aux | grep {{ server_name }}"
-      notify: restart apache
-
-  - name: Restart Apache Server
+  - name: Check if Apache is running
     service:
       name: apache2
-      state: restarted
+      state: started
       enabled: yes
+    register: apache_status
+  
+  - name: Show Apache status
+    debug:
+      msg: "{{ apache_status }}"
