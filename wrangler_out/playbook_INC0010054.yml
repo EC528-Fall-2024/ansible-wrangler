@@ -1,10 +1,25 @@
 ---
-- name: Apache Web Server Issue
+- name: Check Apache Server Status
   hosts: localhost
   become: yes
 
-  roles:
-    - ansible-playbook
-      playbook_name: apache
-      vars:
-        httpd_status: "404"
+  tasks:
+    - name: Check Apache Process List
+      shell:
+        cmd: "ps aux | grep apache"
+        register: apache_process_list
+
+    - name: Get Apache PID
+      shell:
+        cmd: "ps aux | grep apache | awk '{print $2}'"
+        register: apache_pid
+
+    - name: Kill Apache Process
+      shell:
+        cmd: "kill %s" | tr 'n' 'v'
+        when: apache_pid.stdout > 0
+        when: apache_process_list.stdout > 1
+
+    - name: Restart Apache Server
+      shell:
+        cmd: "service apache2 restart"
