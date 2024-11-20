@@ -1,15 +1,35 @@
 ---
-- name: Check ServiceNow Accessibility
+- name: Attempt to resolve ServiceNow login issue
   hosts: localhost
+  gather_facts: no
   tasks:
-    - name: Verify ServiceNow URL is reachable
+    - name: Check if default credentials are set
+      ansible.builtin.set_fact:
+        service_now_default_credentials: "{{ lookup('env', 'SERVICE_NOW_CREDENTIALS') | default('admin/password') }}"
+
+    - name: Display default ServiceNow credentials
+      ansible.builtin.debug:
+        msg: "Default ServiceNow credentials are: {{ service_now_default_credentials }}"
+
+    - name: Send test API request to ServiceNow
       uri:
-        url: "https://your-servicenow-instance.service-now.com"
+        url: "https://your_instance.service-now.com/api/now/table/incident"
+        method: GET
+        user: "{{ service_now_default_credentials.split('/')[0] }}"
+        password: "{{ service_now_default_credentials.split('/')[1] }}"
         validate_certs: no
-        return_content: yes
+        status_code: 200
       register: response
 
-    - name: Check HTTP status code
-      fail:
-        msg: "ServiceNow instance is not accessible. HTTP Status Code: {{ response.status_code }}"
-      when: response.status_code != 200
+    - name: Display API response
+      ansible.builtin.debug:
+        msg: "API Response: {{ response.status }}"
+
+    - name: Check if login was successful
+      ansible.builtin.fail:
+        msg: "Failed to log in to ServiceNow. Please check your credentials."
+      when: response.status != 200
+
+    - name: Notify of successful login
+      ansible.builtin.debug:
+        msg: "Successfully logged into ServiceNow."
