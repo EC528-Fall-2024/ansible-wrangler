@@ -1,0 +1,22 @@
+---
+- name: Example Playbook
+  hosts: all
+  become: yes
+  tasks:
+    - name: Ensure package is installed
+      apt:
+        name: vim
+        state: present
+
+    - name: Copy configuration file
+      copy:
+        src: /local/path/to/config/file.conf
+        dest: /etc/config/file.conf
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: Restart service
+      systemd:
+        name: example_service
+        state: restarted
