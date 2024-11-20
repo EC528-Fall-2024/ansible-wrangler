@@ -1,11 +1,17 @@
 ---
-- name: Check if Apache is running
+- name: Apache Web Server Check
   hosts: all
+  become: yes
+
+  roles:
+    - ansible-role-apache-server
+
   tasks:
-  - name: Check if Apache is running
-    service:
-      name: apache
-      state: started
-      enabled: yes
-  - name: Restart Apache
-    command: systemctl restart apache
+  - name: Get Apache process list
+    command:
+      cmd: "ps aux | grep apache"
+      register: apache_processes
+
+  - name: List Apache processes
+    debug:
+      msg: "{{ apache_processes.stdout | splitlines }}"
