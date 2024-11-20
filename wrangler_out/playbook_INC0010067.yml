@@ -1,33 +1,25 @@
 ---
-- name: ServiceNow Login Troubleshooting Playbook
+- name: Check ServiceNow connectivity
   hosts: localhost
   gather_facts: no
   tasks:
-    - name: Check if ServiceNow URL is reachable
-      uri:
-        url: "https://your_instance.service-now.com"
-        method: GET
-        validate_certs: yes
-      register: service_now_response
-
-    - name: Debug the response from ServiceNow
-      debug:
-        var: service_now_response.status_code
-
-    - name: Ensure credentials are correct
+    - name: Test ServiceNow API connection
       uri:
         url: "https://your_instance.service-now.com/api/now/table/incident"
         method: GET
+        headers:
+          Accept: application/json
         validate_certs: yes
-        user: "{{ sn_user }}"
-        password: "{{ sn_password }}"
-      register: incident_response
+        user: your_username
+        password: your_password
+        force_basic_auth: yes
+      register: response
 
-    - name: Debug the response from ServiceNow API
+    - name: Display response status code
       debug:
-        var: incident_response.status_code
+        msg: "Response Status Code: {{ response.status_code }}"
 
-    - name: Check if login is successful based on status code
+    - name: Fail if connection was unsuccessful
       fail:
-        msg: "Login failed. Please check your credentials."
-      when: incident_response.status_code != 200
+        msg: "Failed to connect to ServiceNow. Response Status Code: {{ response.status_code }}"
+      when: response.status_code != 200
