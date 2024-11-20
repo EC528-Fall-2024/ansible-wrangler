@@ -1,0 +1,25 @@
+---
+# Run using the following:
+# ansible-playbook --ask-sudo-pass yarn.yml
+- hosts: 127.0.0.1
+  connection: local
+  become_user: root
+  vars:
+    - apt_file: /etc/apt/sources.list.d/yarn.list
+  tasks:
+    - name: Add apt key
+      apt_key:
+        url: https://dl.yarnpkg.com/debian/pubkey.gpg
+        state: present
+      become: yes
+
+    - name: Update apt repository
+      apt_repository:
+        repo: deb https://dl.yarnpkg.com/debian/ stable main
+        state: present
+        update_cache: yes
+      become: yes
+
+    - name: Install Yarn
+      apt: pkg=yarn state=present
+      become: yes

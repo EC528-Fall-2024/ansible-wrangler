@@ -1,0 +1,11 @@
+- name: Raul's homeserver Ansible playbook
+  hosts: all
+  become: true
+
+  roles:
+    - { role: samba }
+    - { role: docker }
+    - { role: deploy_containers }
+    - { role: bagsplus_backup }
+    - { role: setup_backups }
+    - { role: fb_group_scraper }

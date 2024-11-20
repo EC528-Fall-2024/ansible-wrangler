@@ -1,0 +1,103 @@
+#!/usr/bin/env ansible-playbook
+---
+- name: Red Hat Virtualization Manager
+  hosts: rhv_hosts
+  vars_files:
+    - passwords.vault
+  vars:
+    repositories_for_rhel_version:
+      "7":
+      - rhel-7-server-rhv-4.3-manager-rpms
+      - rhel-7-server-rhv-4-manager-tools-rpms
+      - rhel-7-server-ansible-2-rpms
+      - jb-eap-7.2-for-rhel-7-server-rpms
+      # https://access.redhat.com/documentation/en-us/red_hat_virtualization/4.4-beta/html/installing_red_hat_virtualization_as_a_self-hosted_engine_using_the_command_line/installing_the_self-hosted_engine_deployment_host_she_cli_deploy
+      "8":
+        - rhel-8-for-x86_64-baseos-rpms
+        - rhel-8-for-x86_64-appstream-rpms
+        - rhv-4-mgmt-agent-beta-for-rhel-8-x86_64-rpms
+        - fast-datapath-for-rhel-8-x86_64-rpms
+        - ansible-2.9-for-rhel-8-x86_64-rpms
+        - advanced-virt-for-rhel-8-x86_64-rpms
+        - satellite-tools-6.7-for-rhel-8-x86_64-rpms
+
+  tasks:
+  - name: RHV_repositories
+    rhsm_repository:
+      name: "{{ repositories_for_rhel_version[ansible_distribution_major_version] }}"
+      state: enabled
+      purge: true
+
+  - name: clear_virt_module_stream
+    command: dnf module disable virt:rhel -y
+    when: ansible_distribution_major_version|int == 8
+    args:
+      warn: false
+
+  - name: setup_virt_module_streams
+    command: dnf module enable virt:8.2 -y
+    when: ansible_distribution_major_version|int == 8
+    args:
+      warn: false
+
+  - name: distro_sync
+    command: dnf distro-sync -y
+    args:
+      warn: false
+
+  - name: up_to_date
+    yum:
+      name: '*'
+      state: latest
+  
+  - name: rhv_appliance_packages
+    yum:
+      name:
+        - rhvm-appliance
+        - ovirt-hosted-engine-setup
+        - tmux
+
+  - name: storage_permissions
+    file:
+      owner: vdsm
+      group: kvm
+      mode: 0755
+      path: /rhv_data
+      state: directory
+
+  - name: fail if vault not decrypted
+    fail: msg="Vault not decrypted"
+    when: rhv_admin_pw is undefined
+
+  - name: answer_file
+    template:
+      src: rhv/rhv44beta_answerfile.j2
+      dest: /root/rhv_answerfile.conf
+      backup: true
+      mode: u=rw,go-rwx
+      owner: root
+      group: root
+
+
+  # *** Didn't fully work, had to run manually ***
+  # - name: engine_setup
+  #   command:
+  #     argv:
+  #       - "hosted-engine"
+  #       - "--deploy"
+  #       - "--config=/root/rhv_answerfile.conf"
+  #       - "--log=/root/rhv_engine-setup.log"
+  #       - "--accept-defaults"
+  #     stdin: /dev/null
+  #   register: setup_output
+
+  # - name: setup_output
+  #   debug:
+  #     vars: setup_output
+
+  handlers:
+  - name: restart_ovirt_engine
+    service:
+      name: ovirt-engine
+      state: restarted
+...

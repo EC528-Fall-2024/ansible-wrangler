@@ -1,7 +1,0 @@
----
-- hosts: all
-  tasks:
-    - name: Create a file
-      file:
-        path: /tmp/myfile.txt
-        state: touch

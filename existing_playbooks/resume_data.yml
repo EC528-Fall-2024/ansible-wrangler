@@ -1,0 +1,298 @@
+---
+author:
+  name: Alexander Krantz
+  links:
+    - type: email
+      email: alex@krantz.dev
+    - type: phone
+      phone: +1 778 873 1160
+    - type: website
+      url: https://krantz.dev
+    - type: github
+      username: akrantz01
+    - type: linkedin
+      username: akrantz01
+
+education:
+  - id: bcit-cst
+    school: British Columbia Institute of Technology
+    degree: Computer Systems Technology
+    date:
+      start: 2024-01-08
+      end: 2026-04-30
+    location: Vancouver, BC, Canada
+    gpa: 93%
+    courses:
+      - Web Development I & II
+      - Programming Methods
+      - Business Analysis and System Design
+
+  - id: ubc-ee
+    school: University of British Columbia
+    degree: Bachelor of Applied Science
+    area: Electrical Engineering
+    date:
+      start: 2020-09-08
+      end: 2023-12-23
+    location: Vancouver, BC, Canada
+    courses:
+      - Introduction to Microcomputers
+      - Data Structures and Algorithms
+      - Symbolic Logic
+    extra: >-
+      #text(weight: "medium")[Progress]: unfinished
+
+experience:
+  - id: sai-summer
+    company: Sanctuary AI
+    title: Cognitive Platform Co-op
+    date:
+      start: 2024-06-01
+      end: 2024-08-30
+    location: Vancouver, BC, Canada
+    highlights:
+      - >-
+        Campaigned across software and embedded teams to promote Ansible adoption and knowledge,
+        leading to a 75% increase in team member confidence and ~25 new playbooks for automating
+        processes.
+      - >-
+        Reduced deployment time from 1 day to 15 minutes by applying best practices to Ansible
+        playbooks and roles.
+      - >-
+        Improved internal Ansible developer experience by introducing CI/CD pipelines to run
+        automated linting, role testing in ephemeral Docker containers, playbook integration
+        testing on dedicated test hardware, and inventory validation.
+
+  - id: sai-fall
+    company: Sanctuary AI
+    title: Systems Integration Co-op
+    date:
+      start: 2023-09-01
+      end: 2023-12-31
+    location: Vancouver, BC, Canada
+    highlights:
+      - >-
+        Declaratively created a collection of continuous deployment pipelines on AWS to deploy two
+        services across multiple accounts, ensuring the separation of environments using AWS CDK
+        and CodePipelines.
+      - >-
+        Removed all usages of static AWS credentials in favor of assume role credentials to increase
+        security.
+      - Reduced the size of a service's container by 85% and sped up its startup time by 100 times.
+
+  - id: shopify-payments
+    company: Shopify
+    title: Payments Infrastructure, Backend Developer Intern
+    date:
+      start: 2023-05-01
+      end: 2023-08-31
+    location: Vancouver, BC, Canada
+    highlights:
+      - >-
+        Made a parameter optional across the service to reduce data duplication and streamline
+        usage for clients.
+      - >-
+        Assisted in preparing for Black Friday/Cyber Monday traffic by performing load tests and
+        validating Grafana alerts.
+      - >-
+        Prevented potential fines from NACHA by handling account errors in ACH return transaction
+        processing.
+
+  - id: shuttle
+    company: Shuttle
+    title: Open Source Contractor
+    date:
+      start: 2022-10-01
+      end: 2023-02-28
+    location: Vancouver, BC, Canada
+    highlights:
+      - >-
+        Discovered a vulnerability that allowed remote code execution and full database access via
+        SQL injection.
+      - >-
+        Designed and implemented a system that issues TLS certificates for custom domains using
+        LetsEncrypt.
+
+  - id: shopify-fulfillment
+    company: Shopify
+    title: Shopify Fulfillment Network, Backend Developer Intern
+    date:
+      start: 2022-05-01
+      end: 2022-08-31
+    location: Redwood City, CA, USA
+    highlights:
+      - >-
+        Minimized shipping time for packages by selecting carriers based on historical performance
+        data.
+      - Improved error handling for parcel carriers not supporting tracking created labels.
+      - >-
+        Added strict typing to the codebase using Sorbet to improve developer experience and
+        prevent errors.
+
+  - id: influxdata
+    company: InfluxData
+    title: Software Engineering Intern
+    date:
+      start: 2021-05-01
+      end: 2021-09-30
+    location: Redwood City, CA, USA
+    highlights:
+      - >-
+        Implemented ~25 bug fixes and features in Telegraf's database, cloud service, and
+        orchestration interactions.
+      - >-
+        Interacted with community developers to troubleshoot and resolve issues and pull requests
+        on GitHub.
+
+volunteering:
+  - id: wafflehacks
+    company: WaffleHacks
+    title: Directory of Technology
+    date:
+      start: 2021-02-01
+      end: 2024-09-01
+    url: https://wafflehacks.org
+    highlights:
+      - >-
+        Developed and deployed a custom application portal using Python and TypeScript that was
+        visited by ~3500 participants over 4 events.
+      - >-
+        Leveraged distributed tracing via OpenTelemetry to detect reliability issues and reduce
+        latency by 250ms.
+      - >-
+        Coordinated a team of student developers to build a judging platform, Discord bot, and
+        website.
+
+projects:
+  - id: antsi
+    title: antsi
+    description: A quick and easy way to style text for the terminal
+    date:
+      start: 2024-03-17
+      end: 2024-04-18
+    url:
+      type: github
+      href: https://github.com/akrantz01/antsi
+    details:
+      - >-
+        Provides a simply Python API wrapping a Rust core through the PyO3 library to minimize the
+        performance impact.
+      - >-
+        Built a custom markup language parser to assign decorations to text, minimizing the number
+        of escape sequences.
+
+  - id: lers
+    title: lers
+    description: An asynchronous, user-friendly ACME client for Rust
+    date:
+      start: 2023-03-14
+      end: 2023-03-30
+    url:
+      type: github
+      href: https://github.com/akrantz01/lers
+    details:
+      - Implements the full RFC 8555 specification, including external account bindings.
+      - >-
+        Provides robust, bundled challenge solvers for the HTTP-01, DNS-01, and TLS-ALPN-01
+        challenges.
+
+  - id: davoxide
+    title: DAVOxide
+    description: A simple WebDAV server with a minimal web UI
+    date:
+      start: 2022-07-21
+      end: 2022-08-13
+    url:
+      type: github
+      href: https://github.com/akrantz01/davoxide
+    details:
+      - A Rust-based class 1 WebDAV server implementing all required features of RFC 4918.
+      - >-
+        Implemented read-only access to files through a web UI using GraphQL written in TypeScript
+        using React.
+      - >-
+        Built a directory- and file-level permissions system using proxy authentication and
+        database-backed authorization.
+
+  - id: lights
+    title: Lights
+    description: An internet-controlled LED strip
+    date:
+      start: 2021-09-30
+      end: 2022-04-03
+    url:
+      type: github
+      href: https://github.com/akrantz01/lights
+    details:
+      - >-
+        Drives a strip of Adafruit NeoPixels with a Rasperry Pi 4 through a Rust-based library for
+        GPIO control.
+      - >-
+        Provides real-time control with a web interface using WebSockets and Redux for client-side
+        state synchronization.
+      - >-
+        Implemented customizable animations using WebAssembly modules loaded and executed
+        on-demand.
+
+awards:
+  - id: treehacks-cognito
+    name: Best Startup by YCombinator
+    organization: TreeHacks 2023
+    on: 2023-02-19
+    url:
+      text: Devpost
+      href: https://devpost.com/software/cognito-uf3rs1
+    description: >-
+      Developed a web-based tool called Cognito with a friend that uses AI combined with natural
+      language queries to provide companies insight into their customers, audiences, potential
+      leads using publicly available data.
+
+  - id: frontierhacks-atomicnet
+    name: 1st Place
+    organization: FrontierHacks
+    on: 2019-11-24
+    url:
+      text: Devpost
+      href: https://devpost.com/software/atomicnet
+    description: >-
+      Developed a hardware and software solution called AtomicNet to prevent internet outages in a
+      team of 4. It uses low-cost, low-power Rasperry Pis to act as an alternative or more
+      resilient internet, ensuring that internet outages are minimized. The software component is a
+      suite of applications that proide basic chat, forums, and information sharing functionality.
+
+  - id: bsa-eagle
+    name: Eagle Scout
+    organization: Boy Scouts of America
+    on: 2019-01-08
+
+skills:
+  "Programming Languages":
+    - Python
+    - Rust
+    - Go
+    - TypeScript
+    - Ruby
+    - SQL
+    - C
+    - Java
+  "Frameworks & Libraries":
+    - React
+    - Ruby on Rails
+    - Next.js
+    - Svelte
+    - OpenTelemetry
+    - OAuth2
+    - gRPC
+  "Tools & Technologies":
+    - Amazon Web Serivces
+    - Git
+    - Google Cloud Platform
+    - Docker
+    - Kubernetes
+    - Linux
+    - PostgreSQL
+    - Redis
+    - Terraform
+    - Ansible
+    - GitHub Actions
+    - GitLab CI

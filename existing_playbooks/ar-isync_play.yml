@@ -1,0 +1,14 @@
+#!/usr/bin/env ansible-playbook
+---
+
+- hosts: local
+  gather_facts: False
+
+  roles:
+    - role: .
+      accounts:
+        - id: &id '{{ user }}'
+          host: '{{ host }}'
+          user: *id
+          maildir: '{{ maildir }}'
+          patterns: '{{ patterns }}'

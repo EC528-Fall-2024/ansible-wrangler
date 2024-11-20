@@ -1,0 +1,83 @@
+#!/usr/bin/env ansible-playbook
+---
+- name: sat6 deployment
+  hosts: sat6
+  vars_files:
+    - sat6/sat6.vault
+
+  tasks:
+  - name: fail if vault not decrypted
+    fail: msg="Vault not decrypted"
+    when: pulp_admin_password is undefined
+
+  - name: repositories
+    rhsm_repository:
+      name:
+      - rhel-7-server-rpms
+      - rhel-server-rhscl-7-rpms
+      - rhel-7-server-satellite-6.6-rpms
+      - rhel-7-server-satellite-maintenance-6-rpms
+      - rhel-7-server-ansible-2.8-rpms
+      state: enabled
+      purge: yes
+
+  - name: firewall_setup
+    firewalld:
+      state: enabled
+      permanent: true
+      immediate: true
+      port: "{{ item }}"
+    loop:
+    - 80/tcp
+    - 443/tcp
+    - 5647/tcp
+    - 8000/tcp
+    - 8140/tcp
+    - 9090/tcp
+    - 53/udp
+    - 53/tcp
+    - 67/udp
+    - 69/udp
+    - 5000/tcp
+
+  - name: install_sat6
+    yum:
+      name: satellite
+
+  - name: sat6_maint_package
+    yum:
+      name: rubygem-foreman_maintain
+
+  - name: copy_config
+    template:
+      src: sat6/satellite-answers.j2
+      dest: /etc/foreman-installer/scenarios.d/satellite-answers.yaml
+
+  - name: configure_satellite
+    command: 'satellite-installer --scenario satellite'
+    register: sat_config
+
+  - name: config_output
+    debug:
+      var: sat_config
+
+  - name: hammer_cli_password
+    template:
+      src: sat6/foreman_home.j2
+      dest: /root/.hammer/cli.modules.d/foreman.yml
+
+  - name: foreman_maintain_password
+    template:
+      src: sat6/foreman-maintain-hammer.j2
+      dest: /etc/foreman-maintain/foreman-maintain-hammer.yml
+
+  # upgrading:
+  # satellite-maintain upgrade list-versions
+  # satellite-maintain upgrade check --target-version 6.6.z
+  # satellite-maintain upgrade run --target-version 6.6.z 
+
+  # sometimes during failures... https://access.redhat.com/solutions/3497301 will fix...
+
+  # idle timeout: Web UI → Administer → Settings → Authentications → Idle timeout
+
+...

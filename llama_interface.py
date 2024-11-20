@@ -29,7 +29,7 @@ from sentence_transformers import SentenceTransformer
 PLAYBOOKS_DIR = 'existing_playbooks/'         # Directory containing existing playbooks
 FAISS_INDEX_PATH = 'faiss.index'     # Path to save/load the FAISS index
 DOCUMENTS_PATH = 'documents.txt'     # Path to save/load playbook contents
-MODEL_NAME = 'llama3.2:1b'           # Ollama model name
+MODEL_NAME = 'qwen2.5-coder:32b'#'codellama'#'llama3.2:1b'           # Ollama model name
 TOP_K = 3                            # Number of top playbooks to retrieve
 
 # ----------------------------

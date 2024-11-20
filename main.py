@@ -11,6 +11,7 @@ from utils import check_gpu_availability
 # Load environment variables
 load_dotenv(override=True)
 use_gpu=check_gpu_availability()
+print(f'GPU: {use_gpu}')
 # Connect to ServiceNow API
 instance = os.getenv("INSTANCE")
 username = os.getenv("USERNAME")
@@ -18,7 +19,7 @@ password = os.getenv("PASSWORD")
 journal_endpoint = '/api/now/table/sys_journal_field'
 endpoint = '/api/now/table/incident'
 user_endpoint = '/api/now/table/sys_user'
-
+PLAYBOOKS_DIR = 'existing_playbooks/' 
 # Form the complete URL with filters and ordering by number in ascending order
 user_name = "System Administrator" ## UPDATE USER
 url = instance + user_endpoint + "?sysparm_query=name=" + user_name
@@ -38,11 +39,6 @@ headers = {
 create_faiss_index(use_gpu=use_gpu)
 
 
-def process_playbook(description, incident_number, use_gpu):
-
-    playbook = generate_ansible_playbook(description, use_gpu=use_gpu)  # Assumes generate_ansible_playbook is available
-    
-    return playbook
 
 def update_incident(url, payload, headers, username, password):
     response = requests.patch(url, json=payload, headers=headers, auth=HTTPBasicAuth(username, password))
@@ -88,6 +84,7 @@ else:
 
 # Updated filter query using the sys_id
 # Fetch incident data
+create_faiss_index(use_gpu=use_gpu)
 while True:
     filter_query = f"caller_id={caller_sys_id}^active=true^universal_requestISEMPTY&sysparm_fields=number,short_description,state,description,sys_id"
     url = instance + endpoint + "?sysparm_query=" + filter_query
@@ -128,10 +125,10 @@ while True:
                     response = requests.patch(update_url, json=payload, headers=headers, auth=HTTPBasicAuth(username, password))
                     if response.status_code != 200: 
                         print('Status:', response.status_code, 'Headers:', response.headers, 'Error Response:',response.json())
-                    playbook = process_playbook(description, incident_number,use_gpu=use_gpu)
+                    playbook = generate_ansible_playbook(description, use_gpu=use_gpu)
                     job_status = awx(incident_number,playbook)
                     while (job_status == "failed"):
-                        playbook = process_playbook(description, incident_number,use_gpu=use_gpu)
+                        playbook = generate_ansible_playbook(description,use_gpu=use_gpu)
                         job_status = awx(incident_number,playbook)
                     payload = {
                         'comments': (
@@ -157,8 +154,13 @@ while True:
                     latest_comment = sorted_comments[0]["value"]
                     if latest_comment == "Regenerate":
                         update_url = instance + endpoint + '/' + incident_sys_id
+                        playbook= generate_ansible_playbook(description,use_gpu=use_gpu)
+                        job_status = awx(incident_number,playbook)
+                        while (job_status == "failed"):
+                            playbook = generate_ansible_playbook(description,use_gpu=use_gpu)
+                            job_status = awx(incident_number,playbook)
                         payload = {
-                            'comments': (
+                        'comments': (
                                 'The playbook has been generated and validated. Here it is:\n\n'
                                 f'{playbook}\n\n'
                                 'You have two options:\n'
@@ -170,18 +172,9 @@ while True:
                         response = requests.patch(update_url, json=payload, headers=headers, auth=HTTPBasicAuth(username, password))
                         if response.status_code != 200: 
                             print('Status:', response.status_code, 'Headers:', response.headers, 'Error Response:',response.json())
-                        playbook= process_playbook(description, incident_number,use_gpu=use_gpu)
-                        job_status = awx(incident_number,playbook)
-                        while (job_status == "failed"):
-                            playbook = process_playbook(description, incident_number,use_gpu=use_gpu)
-                            job_status = awx(incident_number,playbook)
-                        payload = {
-                        'comments': playbook
-                        }
-                        response = requests.patch(update_url, json=payload, headers=headers, auth=HTTPBasicAuth(username, password))
-                        if response.status_code != 200: 
-                            print('Status:', response.status_code, 'Headers:', response.headers, 'Error Response:',response.json())
                     if latest_comment == "Accept":
+                        with open(f'{PLAYBOOKS_DIR}playbook_{incident_number}.yml', 'w') as file:
+                            file.write(playbook)
                         update_url = instance + endpoint + '/' + incident_sys_id
                         payload = {
                             'state' : 6,

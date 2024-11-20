@@ -1,0 +1,25 @@
+# NOTE(mastensg): exclude hosts which have their own ansible directories.
+- hosts: all,!bomba,!heim,!p2k16-production,!p2k16-staging
+  roles:
+    - bitraf-base
+    - lusers
+    - superusers
+
+- hosts:
+    # TODO: the ignores hosts can use this role, it just have to be
+    # checked that it work.
+    - all !iot !mysql
+  roles:
+    - role: unattended-upgrades
+      become: yes
+
+# NOTE(mastensg): the riemann-health roles should not conflict with per-host
+# ansible playbooks.
+- hosts: all
+  roles:
+    - riemann-health
+
+# NOTE(mastensg): riemann-systemd is only built for linux/amd64.
+- hosts: all,!tv
+  roles:
+    - riemann-systemd

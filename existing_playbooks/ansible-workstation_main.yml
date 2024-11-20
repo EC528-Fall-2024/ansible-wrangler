@@ -1,0 +1,39 @@
+---
+- name: "Main Ansible playbook"
+  hosts: localhost
+  connection: local
+  
+  vars_files:
+    - ./vars/vault_vars.yml
+    - ./vars/vars.yml
+
+  vars_prompt:
+    - name: nas_pw
+      prompt: "Insert NAS user {{ nas_user }} password"
+
+  pre_tasks:
+  - name: "Update Cache"
+    become: yes
+    apt:
+      update_cache: yes
+      cache_valid_time: 3600
+
+  tasks:
+
+  - include: ./tasks/packages.yml
+  - include: ./tasks/dotfiles.yml
+  - include: ./tasks/neovim.yml
+  - include: ./tasks/keepassxc.yml
+  - include: ./tasks/rclone.yml
+  - include: ./tasks/veracrypt.yml
+  - include: ./tasks/firefox.yml
+  - include: ./tasks/chrome.yml
+  - include: ./tasks/brave.yml
+  - include: ./tasks/spotify.yml
+  - include: ./tasks/discord.yml
+  - include: ./tasks/nas.yml
+  - include: ./tasks/python.yml
+  - include: ./tasks/llvm.yml
+  - include: ./tasks/icarus.yml
+  - include: ./tasks/verilator.yml
+  - include: ./tasks/riscv.yml

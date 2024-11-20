@@ -1,0 +1,8 @@
+---
+# compute-video-demo-ansible
+- name: Include GCE Instance Create playbook
+  import_playbook: gce-instances.yml
+- name: Include Run Code playbook
+  import_playbook: runcode.yml
+- name: Include GCE Cleanup playbook
+  import_playbook: cleanup.yml

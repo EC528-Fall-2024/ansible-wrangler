@@ -1,0 +1,22 @@
+# file: dns.yaml
+#
+# Creates security enabled DNS zones via the Managed DNS provider API.
+#
+# ansible-playbook -vvv dns.yaml -i zones
+#
+---
+
+- name: MANAGED DNS
+  hosts: localhost
+  connection: local
+  roles:
+  - dynect_zones
+
+- name: MANUAL STEPS
+  hosts: localhost
+  connection: local
+  gather_facts: no
+  tasks:
+  - name: DNSSEC instructions
+    debug: msg="Remember to add the Delegation Signer (DS) records
+                from the DNS management console to your domain registrations."

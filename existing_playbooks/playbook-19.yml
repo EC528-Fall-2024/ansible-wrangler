@@ -1,7 +1,0 @@
----
-- hosts: all
-  tasks:
-    - name: Create a user
-      user:
-        name: john
-        state: present

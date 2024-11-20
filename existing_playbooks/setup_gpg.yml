@@ -1,0 +1,109 @@
+---
+- name: Configure gpg
+  hosts: workstation
+  tasks:
+
+  - name: Ensure required software packages to run this playbook are installed
+    ansible.builtin.dnf:
+      name:
+        - pcsc-lite
+        - pcsc-tools
+        - python3-psutil
+    become: true
+
+  - name: Start and enable pcscd.service
+    ansible.builtin.systemd:
+      name: pcscd.service
+      state: started
+      enabled: true
+    become: true
+
+  - name: Start and enable pcscd.socket
+    ansible.builtin.systemd:
+      name: pcscd.socket
+      state: started
+      enabled: true
+    become: true
+
+  - name: Create a directory for '~/.gnupg'
+    ansible.builtin.file:
+      path: $HOME/.gnupg
+      state: directory
+      mode: '0700'
+    become: false
+
+  - name: Create a '~/.gnupg/gpg.conf' file
+    ansible.builtin.copy:
+      src: gpg.conf
+      dest: $HOME/.gnupg/gpg.conf
+      force: true
+      mode: '0600'
+    become: false
+
+  - name: Setup gpg key
+    ansible.builtin.command: >-
+      bash -c "
+        if ! gpg --list-key stefan.widgren@gmail.com; then
+          gpg --import files/key.asc
+          KEYID=$(gpg --list-keys --with-colons stefan.widgren@gmail.com | awk -F: '/fpr:/ {print $10}' | head -n 1)
+          echo -e '5\ny\n' | gpg --command-fd 0 --edit-key $KEYID trust
+          echo 'Setup gpg'
+        fi"
+    register: setup_gpg
+    changed_when: "'Setup gpg' in setup_gpg.stdout"
+    become: false
+
+  - name: Create a configuration file for gpg-agent
+    ansible.builtin.copy:
+      src: gpg-agent.conf
+      dest: $HOME/.gnupg/gpg-agent.conf
+      force: false
+    become: false
+
+  - name: Ensure the 'SSH_AUTH_SOCK' is set
+    ansible.builtin.lineinfile:
+      path: $HOME/.bashrc
+      regexp: '^export SSH_AUTH_SOCK='
+      line: export SSH_AUTH_SOCK=$(gpgconf --list-dirs agent-ssh-socket)
+    become: false
+
+  - name: Ensure the 'gpg-agent' is launched
+    ansible.builtin.lineinfile:
+      path: $HOME/.bashrc
+      regexp: '^gpgconf --launch gpg-agent'
+      line: gpgconf --launch gpg-agent
+    become: false
+
+  - name: Create a '~/.ssh' directory
+    ansible.builtin.file:
+      path: $HOME/.ssh
+      state: directory
+      mode: '0700'
+    become: false
+
+  - name: Create a configuration file for ssh
+    ansible.builtin.copy:
+      src: ssh-config
+      dest: $HOME/.ssh/config
+      force: false
+      mode: '0600'
+    become: false
+
+  - name: Setup ssh key
+    ansible.builtin.command: >-
+      bash -c "
+        if test ! -f ${HOME}/.ssh/id_rsa_yubikey.pub; then
+          gpg --export-ssh-key stefan.widgren@gmail.com > $HOME/.ssh/id_rsa_yubikey.pub
+          chmod 600 $HOME/.ssh/id_rsa_yubikey.pub
+          echo 'Setup ssh'
+        fi"
+    register: setup_ssh
+    changed_when: "'Setup ssh' in setup_ssh.stdout"
+    become: false
+
+  - name: Ensure the 'alias switch-yubikey' is set
+    ansible.builtin.lineinfile:
+      path: $HOME/.bashrc
+      regexp: '^alias switch-yubikey='
+      line: alias switch-yubikey="gpg-connect-agent 'scd serialno' 'learn --force' /bye"
+    become: false

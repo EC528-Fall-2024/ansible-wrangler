@@ -1,0 +1,149 @@
+# Ansible Playbook for Subutai WordPress blueprint
+---
+
+- hosts: calibre
+  remote_user: root
+
+  tasks:
+
+    - name: Upgrade debian
+      apt:
+        update_cache: true
+        upgrade: "yes"
+
+    - name: Install required debs
+      apt:
+        name:
+        - git
+        - python-pip
+        - sudo
+        state: present
+
+    - name: Create calibre user
+      user:
+        name: calibre
+        comment: Calibre Web User
+        group: users
+        shell: /bin/bash
+        state: present
+
+    - name: Clone Calibre Github Repository
+      git:
+        repo: https://github.com/janeczku/calibre-web.git
+        dest: /home/calibre/calibre-web
+
+    # - name: Install limits.ini
+    #   template:
+    #     src: files/limits.ini
+    #     dest: /etc/php/7.3/mods-available/limits.ini
+
+    # - name: Activate limits.ini
+    #   shell: phpenmod limits
+
+    # - name: Create database
+    #   mysql_db:
+    #     name: wordpress
+    #     state: present
+    #     encoding: utf8
+
+    # - name: Create database user
+    #   mysql_user:
+    #     name: wordpress
+    #     password: wordpress
+    #     priv: "wordpress.*:ALL"
+
+    # - name: Get wp-cli
+    #   get_url:
+    #     url: https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar
+    #     dest: /usr/local/bin/wp
+    #     validate_certs: no
+
+    # - name: Make wp-cli executable
+    #   file:
+    #     path: /usr/local/bin/wp
+    #     state: touch
+    #     mode: u+rwx,g+rx,o+rx
+
+    # - name: Download WP Core
+    #   shell: wp core download --allow-root
+    #   args:
+    #     chdir: /var/www/html
+    #     creates: /var/www/html/index.php
+
+    # - name: Create WP Config
+    #   shell: wp config create --dbname=wordpress --dbuser=wordpress --dbpass=wordpress --allow-root
+    #   args:
+    #     chdir: /var/www/html
+    #     creates: /var/www/html/wp-config.php
+
+    # - name: Install WP
+    #   shell: wp core install --url='{{domain_name}}' --title='{{site_title}}' --admin_user='{{admin_user}}' --admin_password='{{admin_pwd}}' --admin_email='info@wp-cli.org' --skip-email --allow-root
+    #   args:
+    #     chdir: /var/www/html
+
+    # - name: Set site description
+    #   shell: wp option update blogdescription '{{site_description}}' --allow-root
+    #   args:
+    #     chdir: /var/www/html
+
+    # - name: Copy subutai theme
+    #   copy:
+    #     src: files/subutai
+    #     dest: /var/www/html/wp-content/themes
+    #     owner: www-data
+    #     group: www-data
+
+    # - name: Set theme
+    #   shell: wp theme install twentyseventeen --allow-root
+    #   args:
+    #     chdir: /var/www/html
+
+    # - name: Activate subutai theme
+    #   shell: wp theme activate subutai --allow-root
+    #   args:
+    #     chdir: /var/www/html
+
+    # - name: Change to https
+    #   shell: wp search-replace 'http://{{domain_name}}' 'https://{{domain_name}}' --allow-root
+    #   args:
+    #     chdir: /var/www/html
+
+    # - name: Insert extra config
+    #   blockinfile:
+    #     path: /var/www/html/wp-config.php
+    #     marker: "/* {mark} ANSIBLE MANAGED BLOCK */"
+    #     insertafter: '^\$table_prefix.*$'
+    #     block: |
+    #       if ( $_SERVER['HTTP_X_FORWARDED_PROTO'] == 'https' )
+    #       {
+    #             $_SERVER['HTTPS']       = 'on';
+    #                     $_SERVER['SERVER_PORT'] = '443';
+    #                     define('FORCE_SSL_ADMIN', true);
+    #       }
+    #       if ( isset($_SERVER['HTTP_X_FORWARDED_HOST'])) {
+    #             $_SERVER['HTTP_HOST'] = $_SERVER['HTTP_X_FORWARDED_HOST'];
+    #       }
+
+    # - name: Delete Unused Plugins
+    #   shell: wp plugin delete akismet hello --allow-root
+    #   args:
+    #     chdir: /var/www/html
+
+    # - name: Remove original index.html
+    #   file:
+    #     name: /var/www/html/index.html
+    #     state: absent
+
+    # - name: Change ownership
+    #   file:
+    #     path: /var/www/html
+    #     recurse: yes
+    #     owner: www-data
+    #     group: www-data
+
+    # - name: Restart apache
+    #   service:
+    #     name: apache2
+    #     state: restarted
+
+# vim: ts=2 et nowrap autoindent

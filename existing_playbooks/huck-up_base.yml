@@ -1,0 +1,27 @@
+---
+# Base Ansible playbook: Maps configuration of the 'raspberries' group
+# to the roles (services) that you want the group's host(s) to run.
+
+- hosts: raspberries
+  roles:
+    - ssh-keys
+    - essentials
+    - dotfiles
+    - zsh
+    - mosh
+    - motd
+    - python
+    - go
+    - rust
+    - ruby
+    - node
+    - home
+    - shairport-sync
+    - media-tools
+    - hifiberry
+  vars:
+    home: "{{ ansible_env.HOME }}"
+    user: "{{ ansible_env.USER }}"
+  vars_files:
+    - vars/default.yml
+    - vars/private.yml

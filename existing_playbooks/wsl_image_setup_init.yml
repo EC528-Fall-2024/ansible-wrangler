@@ -1,0 +1,198 @@
+---
+
+- name: Initialize WSL Environment
+  hosts: localhost
+  gather_facts: true
+  tasks:
+    - name: Fail if not executed by root
+      ansible.builtin.command: whoami
+      changed_when: false
+      register: whoami
+      failed_when: '"root" not in whoami.stdout'
+
+    - name: Create Main User Role
+      ansible.builtin.include_role:
+        name: create_main_user
+      vars:
+        v_create_main_user_admin_group: "{{ admin_group }}"
+        v_create_main_user_username: "{{ dev_username }}"
+        v_create_main_user_rootdir: "{{ root_folder_for_workspace }}"
+
+    - name: Add to known hosts to avoid RSA issues later
+      ansible.builtin.include_role:
+        name: add_known_hosts
+      vars:
+        v_add_known_hosts_host_list: "{{ ssh_known_hosts }}"
+        v_add_known_hosts_dev_username: "{{ dev_username }}"
+
+    - name: Create Main Development Directories
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+        mode: '0755'
+        owner: "{{ dev_username }}"
+        group: "{{ dev_username }}"
+      loop:
+        - "{{ root_folder_for_dev }}"
+        - "{{ root_folder_for_workspace }}"
+        - "/home/{{ dev_username }}/.local"
+        - "/home/{{ dev_username }}/.local/bin"
+
+    - name: Ensure local bin in profile for path variable
+      ansible.builtin.lineinfile:
+        dest: "/home/{{ dev_username }}/.profile"
+        state: present
+        regexp: '^%export PATH=/home/{{ dev_username }}/.local/bin'
+        line: 'export PATH=/home/{{ dev_username }}/.local/bin:$PATH'
+        insertbefore: BOF
+
+    - name: Add Test Playbook
+      ansible.builtin.include_role:
+        name: add_test_playbook
+      vars:
+        v_add_test_playbook_rootdir: "{{ root_folder_for_repo }}"
+        v_add_test_playbook_username: "{{ dev_username }}"
+
+    - name: Add Ansible Lint Config
+      ansible.builtin.include_role:
+        name: create_ansiblelint_config
+      vars:
+        v_create_ansiblelint_config_rootdir: "{{ root_folder_for_ansible_lint_config }}"
+        v_create_ansiblelint_config_full_filename: "{{ ansible_lint_config_file }}"
+        v_create_ansiblelint_config_username: "{{ dev_username }}"
+
+    - name: Setup WSL Conf Settings
+      ansible.builtin.include_role:
+        name: create_wsl_conf
+      vars:
+        v_create_wsl_conf_username: "{{ dev_username }}"
+        v_create_wsl_conf_rootdir: "{{ root_folder_for_dev }}"
+
+    - name: Install Some Main Packages
+      ansible.builtin.include_role:
+        name: install_main_packages
+      vars:
+        v_install_main_packages_install_list: "{{ system_packages }}"
+
+    - name: Install Python3-pip and Python Packages
+      ansible.builtin.include_role:
+        name: install_python_packages
+      vars:
+        v_install_python_packages_install_list: "{{ python_modernized_packages }}"
+
+    - name: Install Ansible Collections - root
+      ansible.builtin.include_role:
+        name: install_ansible_collections
+      vars:
+        v_install_ansible_collections_collection_list: "{{ ansible_collection_install_list }}"
+
+    - name: Install podman for Ubuntu
+      ansible.builtin.include_role:
+        name: install_podman_for_ubuntu
+      vars:
+        v_install_podman_for_ubuntu_username: "{{ dev_username }}"
+
+    - name: Install Ansible Navigator
+      ansible.builtin.include_role:
+        name: install_ansible_navigator
+      vars:
+        v_install_ansible_navigator_username: "{{ dev_username }}"
+        v_install_ansible_navigator_setting_container_engine: "podman"    # Would require coding to include docker
+        v_install_ansible_navigator_setting_execution_image: "{{ ansible_navigator_default_eei }}"
+        v_install_ansible_navigator_setting_pull_policy: "{{ ansible_navigator_pull_policy }}"
+        v_install_ansible_navigator_pods_to_pull: "{{ ansible_pods_to_pull }}"
+        v_install_ansible_navigator_rootdir: "{{ root_folder_for_dev }}"
+
+    - name: Install packer
+      ansible.builtin.include_role:
+        name: install_packer
+      vars:
+        v_install_packer_apt_repo: "{{ ubuntu_os_product_name }} main"
+
+    - name: Install terraform
+      ansible.builtin.include_role:
+        name: install_terraform
+      vars:
+        v_install_terraform_apt_repo: "{{ ubuntu_os_product_name }} main"
+
+    - name: Install Sentinel
+      ansible.builtin.include_role:
+        name: install_sentinel
+      vars:
+        v_install_sentinel_username: "{{ dev_username }}"
+        v_install_sentinel_download_url: "{{ sentinel_download_url }}"
+
+    - name: Install NVM and NPMs with version manager
+      ansible.builtin.include_role:
+        name: install_npm_with_version_manager
+      vars:
+        v_install_npm_with_version_manager_username: "{{ dev_username }}"
+        v_install_npm_with_version_manager_package_list: "{{ npm_packages }}"
+
+    - name: Get Starting Git Repos
+      ansible.builtin.git:
+        repo: "{{ item.repo_https }}"
+        version: "{{ item.version }}"
+        dest: "{{ item.dest }}"
+      environment:
+        GIT_TERMINAL_PROMPT: "0"    # reports "terminal prompts disabled" on missing password
+      when: item.dest != root_folder_for_dev + "/wsl_image_setup"    # dont try to update what we are running
+      loop: "{{ git_repo_to_add }}"
+      become_user: "{{ dev_username }}"
+      become: true
+
+    - name: Add Scheduled Tasks
+      ansible.builtin.include_role:
+        name: add_scheduled_tasks
+      vars:
+        v_add_scheduled_tasks_rootdir: "{{ root_folder_for_dev }}"
+        v_add_scheduled_tasks_rootdir_for_cron: "{{ root_folder_for_cronjobs }}"
+        v_add_scheduled_tasks_dev_username: "{{ dev_username }}"
+        v_add_scheduled_tasks_wsl_imagename_version: "{{ wsl_imagename_version }}"
+        v_add_scheduled_tasks_git_patching_repo: "{{ git_patching_repo }}"
+        v_add_scheduled_tasks_wsl_patching_playbook: "{{ wsl_patching_playbook }}"
+        v_add_scheduled_tasks_wsl_version_file: "{{ wsl_version_file }}"
+        v_add_scheduled_tasks_wsl_patchnum_file: "{{ wsl_patchnum_file }}"
+
+    - name: Git Template Setup
+      ansible.builtin.include_role:
+        name: add_global_git_templates
+      vars:
+        v_add_global_git_templates_username: "{{ dev_username }}"
+        v_add_global_git_templates_rootdir: "{{ git_templates_dir }}"
+        v_add_global_git_templates_default: "{{ git_template_default }}"
+        v_add_global_git_templates_repos: "{{ git_template_repos }}"
+
+    - name: Add Global Machine Level Git Hooks
+      ansible.builtin.include_role:
+        name: add_global_githooks
+      vars:
+        v_add_global_githooks_username: "{{ dev_username }}"
+        v_add_global_githooks_rootdir: "{{ root_folder_for_dev }}"
+
+    - name: Setup VS Code Settings
+      ansible.builtin.include_role:
+        name: vs_code_setup
+      vars:
+        v_vs_code_setup_username: "{{ dev_username }}"
+        v_vs_code_setup_color_scheme: "{{ visual_studio_code_color_scheme }}"
+        v_vs_code_setup_ansible_default_execution_environment_image: "{{ visual_studio_code_ansible_default_execution_environment_image }}"
+        v_vs_code_setup_ansible_lint_config_file: "{{ ansible_lint_config_file }}"
+        v_vs_code_setup_extensions: "{{ visual_studio_code_extensions }}"
+        v_vs_code_setup_rootdir: "{{ root_folder_for_dev }}"
+
+    - name: Setup VS Code Workspace
+      ansible.builtin.include_role:
+        name: vs_code_workspace_setup
+      vars:
+        v_vs_code_workspace_setup_username: "{{ dev_username }}"
+        v_vs_code_workspace_setup_rootdir: "{{ root_folder_for_dev }}"
+        v_vs_code_workspace_setup_root_workspace_dir: "{{ root_folder_for_workspace }}"
+        v_vs_code_workspace_setup_root_setuprepo_dir: "{{ root_folder_for_repo }}"
+        v_vs_code_workspace_setup_root_patchrepo_dir: "{{ git_patching_repo.dest }}"
+        v_vs_code_workspace_setup_wsl_doc_website: "{{ wsl_doc_website }}"
+        v_vs_code_setup_ansible_default_execution_environment_image: "{{ visual_studio_code_ansible_default_execution_environment_image }}"
+        v_vs_code_setup_ansible_lint_config_file: "{{ ansible_lint_config_file }}"
+        v_vs_code_workspace_setup_color_scheme: "{{ visual_studio_code_color_scheme }}"
+        v_vs_code_workspace_setup_remove_startup_task: false
+        v_vs_code_workspace_setup_vault_pass: "{{ ansible_wsl_vault_pass }}"

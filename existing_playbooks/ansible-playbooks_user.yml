@@ -1,0 +1,155 @@
+---
+# playbook for creating and configuring new users
+- hosts: '{{ target }}'
+  user: '{{ admin_user }}'
+  become: yes
+
+  vars_files:
+    - vars/user.yml
+
+  vars:
+    homebrew_apps:
+      - git
+    cask_apps:
+      - adobe-creative-cloud
+      - colorpicker-skalacolor
+      - github
+      - google-chrome
+      - harvest
+      - kaleidoscope
+      - microsoft-office
+      - qlcolorcode
+      - qlimagesize
+      - qlmarkdown
+      - qlstephen
+      - quicklook-json
+      - sketch
+      - slack
+      - transmit
+      - visual-studio-code
+    node_global_packages:
+      - browser-sync
+      - gulp-cli
+      - npm
+
+  pre_tasks:
+    - name: Stay awake for 20 minutes
+      shell: caffeinate -t 900 &
+
+    - name: Check if user exists
+      stat: path=/Users/{{ username }}
+      register: check_user
+
+    - set_fact: user_home=/Users/{{ username }}
+      tags: always
+    - set_fact: user_lib=/Users/{{ username }}/Library
+      tags: always
+    - set_fact: user_lib_prefs={{ user_lib }}/Preferences
+      tags: always
+
+    - name: Get available account pictures
+      shell: ls -1 files/user_account_images/*.png
+      register: account_images
+      ignore_errors: yes
+      become: no
+      connection: local
+
+    - name: Default to an empty list if no images are found
+      # The `with_random_choice` command needs a list to pull from, it fails loudly if the list is empty
+      # Sending a list with one empty string allows us to use `account_images.stdout_lines[0]` as a boolean
+      set_fact:
+         account_images:
+            stdout_lines: ['']
+      when: account_images.stdout_lines | length == 0
+
+    - name: Send new account picture
+      copy:
+        src: '{{ item }}'
+        dest: '/Library/User Pictures/Ansible/{{ item | basename }}'
+        mode: 0644
+      when: account_images.stdout_lines[0]
+      with_random_choice: '{{ account_images.stdout_lines }}'
+      ignore_errors: yes
+      register: account_image
+      become: yes
+
+    - name: Handle missing images so we can pass an empty string to the role
+      set_fact:
+        account_image: { results: [ { item: '' } ] }
+      when: account_image.results[0].item is not defined
+
+  roles:
+    - global-prefs
+    - { role: new-user, image: "{{ account_image.results[0].item | basename}}", when: not check_user.stat.exists }
+    - { role: terminal, tags: [terminal] }
+    - { role: homebrew, apps: "{{ homebrew_apps }}", become: no }
+    - { role: homebrew_cask, apps: "{{ cask_apps }}", become: no }
+    - { role: node.js, become: no }
+    - { role: safari, when: user_lib is defined and user_lib_prefs is defined }
+    - { role: finder, when: user_lib is defined and user_lib_prefs is defined }
+    - { role: dock, when: user_lib is defined and user_lib_prefs is defined }
+    # - { role: vagrant, vagrant_user: "{{ username }}", tags: [vagrant] }
+    - { role: mail, tags: [mail] }
+    - { role: sketchapp }
+    - { role: vscode }
+    - { role: git }
+
+  tasks:
+    - set_fact:
+        font_dirs:
+          - "{{ user_lib }}"
+          - "{{ user_lib }}/Fonts"
+
+    - name: Relax permissions on user's Library/Fonts directory
+      file:
+        path: "{{ item }}"
+        mode: 0777
+        state: directory
+      with_items: '{{ font_dirs }}'
+
+    - name: Install default font set from fonts/
+      synchronize:
+        src: fonts/
+        dest: "{{ user_lib }}/Fonts/"
+        rsync_opts: ["--exclude=.gitkeep"]
+        archive: no
+        recursive: yes
+
+    - name: Set user as owner of all fonts in Library/Fonts
+      file:
+        path: "{{ font_dirs | last }}"
+        owner: "{{ username }}"
+        group: staff
+        mode: 0755
+        state: directory
+        recurse: yes
+
+    - name: Restore permissions on user's Library/Fonts directory
+      file:
+        path: "{{ item }}"
+        mode: 0700
+        state: directory
+      with_items: '{{ font_dirs }}'
+
+
+# Second playbook for running the local template stuff
+- hosts: '{{ target }}'
+  connection: local
+  become: no
+
+  vars_files:
+    - vars/user.yml
+
+  tasks:
+    - name: Generate Welcome message on controller
+      template: 
+        src: '{{ item }}'
+        dest: ./Welcome-{{ username }}.html
+      tags: ['welcome', 'template']
+      with_first_found:
+        - templates/welcome.html.j2
+        - templates/welcome_sample.html.j2
+
+    - name: Open generated HTML template
+      shell: open ./Welcome-{{ username }}.html -a Safari
+      tags: ['welcome', 'template']

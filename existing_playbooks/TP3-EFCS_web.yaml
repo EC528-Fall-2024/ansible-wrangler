@@ -1,0 +1,135 @@
+-Guide d'administration système avec Ansible
+ Ansible Tutorial for Beginners
+
+-Documentation sur l'inventaire Ansible
+ Documentation Ansible Inventory
+
+-Documentation de la collection Community.Docker pour Ansible
+ Community Docker Collection
+
+-Meilleures pratiques pour les Playbooks Ansible
+ Ansible Playbook Best Practices
+
+
+---
+- hosts: webservers
+  become: true
+  become_method: sudo
+  vars:
+    docker_volume: db_data
+    db_name: db
+
+  tasks:
+    - name: Install required system packages
+      apt:
+        pkg:
+          - apt-transport-https
+          - ca-certificates
+          - curl
+          - software-properties-common
+          - python3-pip
+          - virtualenv
+          - python3-setuptools
+        state: latest
+        update_cache: true
+
+    - name: Add Docker GPG apt Key
+      apt_key:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        state: present
+
+    - name: Add Docker Repository
+      apt_repository:
+        repo: deb https://download.docker.com/linux/ubuntu focal stable
+        state: present
+
+    - name: Update apt and install docker-ce
+      apt:
+        name: docker-ce
+        state: latest
+        update_cache: true
+
+    - name: Stop and remove Apache container if it exists
+      community.docker.docker_container:
+        name: webapp
+        state: absent
+
+    - name: Create Apache container
+      community.docker.docker_container:
+        name: webapp
+        image: httpd
+        ports:
+          - "8080:80"
+        state: present
+
+    - name: Copy index.html to webservers
+      copy:
+        src: files/index.html
+        dest: "/tmp/index.html"
+
+    - name: Copy index.php to webservers
+      copy:
+        src: files/index.php
+        dest: "/tmp/index.php"
+
+    - name: Copy httpd.conf to webservers
+      copy:
+        src: templates/httpd.conf
+        dest: "/tmp/httpd.conf"
+
+    - name: Check if webapp container is running
+      community.docker.docker_container_info:
+        name: webapp
+      register: webapp_info
+      ignore_errors: true
+
+    - debug:
+        var: webapp_info
+
+    - name: Copy index.html to container
+      community.docker.docker_container_copy_into:
+        container: webapp
+        path: /tmp/index.html
+        container_path: /usr/local/apache2/htdocs/index.html
+      when: webapp_info is defined and webapp_info.container.State.Running | default(false)
+
+    - name: Copy index.php to container
+      community.docker.docker_container_copy_into:
+        container: webapp
+        path: /tmp/index.php
+        container_path: /usr/local/apache2/htdocs/index.php
+      when: webapp_info is defined and webapp_info.container.State.Running | default(false)
+
+    - name: Copy httpd.conf to container
+      community.docker.docker_container_copy_into:
+        container: webapp
+        path: /tmp/httpd.conf
+        container_path: /usr/local/apache2/conf/httpd.conf
+      when: webapp_info is defined and webapp_info.container.State.Running | default(false)
+
+    - name: Set ServerName to suppress warnings
+      community.docker.docker_container_exec:
+        container: webapp
+        command: bash -c 'echo "ServerName localhost" >> /usr/local/apache2/conf/httpd.conf'
+      when: webapp_info is defined and webapp_info.container.State.Running | default(false)
+
+    - name: Restart Apache in the container
+      community.docker.docker_container_exec:
+        container: webapp
+        command: service apache2 restart
+      when: webapp_info is defined and webapp_info.container.State.Running | default(false)
+
+    - name: Launch database container
+      community.docker.docker_container:
+        name: "{{ db_name }}"
+        image: mysql:5.7
+        ports:
+          - "3307:3306"
+        volumes:
+          - "{{ docker_volume }}:/var/lib/mysql:rw"
+        restart: true
+        env:
+          MYSQL_ROOT_PASSWORD: tarik
+          MYSQL_DATABASE: db
+          MYSQL_USER: tarik
+          MYSQL_PASSWORD: tarik

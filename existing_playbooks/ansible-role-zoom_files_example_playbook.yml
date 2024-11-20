@@ -1,0 +1,8 @@
+#!/usr/bin/env ansible-playbook
+---
+- name: zoom | Ensure zoom is installed on system
+  become: yes
+  gather_facts: true
+  hosts: zoom
+  roles:
+    - role: cjsteel.zoom

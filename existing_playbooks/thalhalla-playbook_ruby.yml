@@ -1,0 +1,18 @@
+# Ansible playbook for ruby
+#
+# Author: Josh Cox <josh 'at' webhosting coop>
+---
+
+- name: ruby install
+  hosts: thalhalla
+
+  tasks:
+  - name: Installing ruby-devl
+    become: True
+    apt:  name={{ item  }} state=latest
+    with_items:
+    - ruby-dev
+    - git
+  - name: Installing rvm and then ruby
+    script: installrvm.sh  creates=/home/root/rvmbootstrapped.txt
+    script: gemInstaller.sh

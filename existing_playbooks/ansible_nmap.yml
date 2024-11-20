@@ -1,0 +1,9 @@
+# To Run this Playbook Issue the command
+# ansible-playbook nmap.yml
+# Author Anish Nath
+---
+- hosts: localhost
+  become: yes
+  gather_facts: false
+  roles:
+    - { role: nmap }

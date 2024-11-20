@@ -1,0 +1,87 @@
+---
+# Ansible playbook for setting up the Openconext-Stepup infrastructure
+# Run:
+# cd Stepup-Deploy
+# ansible-playbook -i <environment_directory>/inventory site.yml
+
+
+- hosts: all
+  run_once: true
+  tasks:
+  - name: Require Ansible 2
+    assert:
+      that: ansible_version.major == 2
+
+
+- name: Configuration for all nodes
+  hosts: all
+  become: True
+  tags: common
+  serial: 1
+
+  roles:
+  - common
+
+
+- name: Setup management server
+  hosts: manage
+  become: True
+  tags: manage
+  serial: 1
+
+  roles:
+  - manage
+
+
+- name: Setup mariadb database cluster
+  hosts: dbcluster
+  become: True
+  tags: db
+  serial: 1
+
+  roles:
+  - db
+
+
+- name: Setup elasticseach cluster
+  hosts: es
+  become: True
+  tags: es
+  serial: 1
+
+  roles:
+    - es
+
+
+- name: Setup application servers
+  hosts: app
+  become: True
+  tags: app
+  serial: 1
+
+  roles:
+  - app
+
+
+- name: Setup proxy on application servers
+  hosts: proxy
+  become: True
+  tags: proxy
+  serial: 1
+
+  roles:
+  - proxy
+
+
+# Add development tooling to app server
+# not for production use
+- name: Dev tools
+  hosts: dev
+  become: True
+  tags: dev
+  serial: 1
+
+  roles:
+  - dev
+
+

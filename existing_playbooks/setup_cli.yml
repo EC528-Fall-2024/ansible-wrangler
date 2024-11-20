@@ -1,0 +1,42 @@
+#!/usr/bin/env ansible-playbook
+---
+- hosts: backend
+  tasks:
+    - name: include version vars
+      include_vars:
+        file: cli-vars.yml
+
+    - name: Install Site Reliability Engineering (SRE) tools
+      pip:
+        name: [locust, powerfulseal]
+        state: present
+        executable: pip3
+      become: yes
+
+    - name: Install node and requested node packages
+      import_role:
+        name: nodejs
+      vars:
+        role_spec:
+          version: '{{ node_version }}'
+          packages: '{{ node_packages }}'
+
+    - name: Clone ros projects
+      import_role:
+        name: git
+      vars:
+        role_spec:
+          project_dir: "{{ lookup('pipe', 'pwd') }}/.."
+          repositories:
+            ros:
+              url: https://github.com/rails-on-services/cnfs-cli.git
+              name: cli
+              version: "{{ ros_cli_version }}"
+      when: clone_repos|bool == True
+
+    - name: Configure cli
+      import_role:
+        name: cli
+      vars:
+        project_dir: "{{ lookup('pipe', 'pwd') }}/../cli/cli"
+      when: clone_repos|bool == True

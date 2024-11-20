@@ -1,0 +1,133 @@
+- hosts: "{{ target_hosts | default('aws') }}"
+  become: yes
+  become_user: root
+  gather_facts: false
+
+  tasks:
+    - name: Install python
+      raw: dnf install python -y
+    - name: install packages
+      package: 
+        name: "{{ item }}"
+        state: present
+      loop:
+        - git
+        - docker
+        - make
+        - ansible
+        - grubby
+    - name: install packages
+      pip:
+        name: "{{ item }}"
+      loop:
+        - docker
+        - docker-compose
+        - ansible-tower-cli
+    - name: cater for cgroup v2
+      shell: grubby --update-kernel=ALL --args="systemd.unified_cgroup_hierarchy=0"
+    - name: reboot for kernel params to take effect
+      reboot:
+    - name: wait for machine to come up
+      wait_for_connection:
+        connect_timeout: 20
+        sleep: 5
+        delay: 5
+        timeout: 300
+    - name: pull AWX from git repo
+      git:
+        repo: https://github.com/ansible/awx
+        dest: /awx
+        force: yes
+        version: 3.0.2
+    - name: Start docker daemon
+      service:
+        name: docker
+        enabled: yes
+        state: started
+    - name: Change value of host key checking on AWX server
+      lineinfile:
+        path: /etc/ansible/ansible.cfg
+        regexp: '#host_key_checking = False'
+        line: 'host_key_checking = False' 
+    - name: generate ssh key for local use
+      command: ssh-keygen -b 2048 -t rsa -f /root/.ssh/id_rsa -q -N ""
+      args:
+        creates: /root/.ssh/id_rsa
+    - name: configure local ssh access
+      copy: 
+        remote_src: True 
+        src: /root/.ssh/id_rsa.pub
+        dest: /root/.ssh/authorized_keys
+    - name: Add local key to authorized_keys
+      authorized_key:
+        user: root
+        state: present
+        key: "{{ lookup('file', '/root/.ssh/id_rsa.pub') }}"
+    - name: change value of host in installer inventory
+      lineinfile:
+        path: /awx/installer/inventory
+        regexp: 'localhost ansible_connection=local ansible_python_interpreter="/usr/bin/env python"'
+        line: 'localhost'
+    - name: change value of pg_port in installer inventory
+      lineinfile:
+        path: /awx/installer/inventory
+        regexp: 'pg_port=5432'
+        line: 'pg_port="5432"'
+    - name: install AWX
+      command:  ansible-playbook -i /awx/installer/inventory /awx/installer/install.yml 
+    - name: Configure tower-cli
+      shell: "{{ item }}" 
+      with_items:
+        - tower-cli config verify_ssl false
+        - tower-cli config username admin
+        - tower-cli config password password
+        - tower-cli config host http://127.0.0.1
+    - name: Check to ensure AWX has come up successfully - this can take some time.
+      shell: tower-cli project list
+      register: result
+      until: result.stdout.find("Demo Project") != -1
+      retries: 10
+      delay: 30
+    - name: copy workflow schema file to node
+      copy:
+        src: files/pacman_workflow.yml
+        dest: /root/pacman_workflow.yml
+        mode: 0755 
+    - name: copy workflow telemetry streaming schema file to node
+      copy:
+        src: files/ts_workflow.yml
+        dest: /root/ts_workflow.yml
+        mode: 0755 
+    - name: copy workflow deploy as3 schema file to node
+      copy:
+        src: files/deploy_as3.yml
+        dest: /root/deploy_as3.yml
+        mode: 0755 
+    - name: copy tower config file to node
+      copy:
+        src: files/setup-tower.sh
+        dest: /root/setup-tower.sh
+        mode: 0755 
+    - name: Run tower setup script
+      shell: /root/setup-tower.sh
+    - name: Configure tower-cli
+      shell: "{{ item }}" 
+      with_items:
+        - tower-cli workflow create --name "webapp_workflow"
+      #  - tower-cli workflow schema webapp_workflow @/root/pacman_workflow.yml
+        - tower-cli project create --name ansible-AS3 --scm-type git --scm-url http://github.com/codecowboydotio/ansible-AS3 --organization Default --wait
+        - tower-cli inventory create --name aws-bigip --organization Default
+        - tower-cli inventory_source create --name "aws-source" --inventory "aws-bigip" --source ec2 --credential "aws-account" --update-on-launch "true" --overwrite "true" --instance-filters "tag:boxtype=bigip"
+        - tower-cli job_template create --name "Update AS3 declaration" --job-type run --inventory aws-bigip --project ansible-AS3 --playbook AS3-select-vip.yml --credential root-ssh --extra-vars "target_hosts=all aws_region=ap-southeast-2"
+        - tower-cli job_template associate_credential --credential aws-account --job-template "Update AS3 declaration"
+        - tower-cli job_template create --name "Post AS3 declaration" --job-type run --inventory aws-bigip --project ansible-AS3 --playbook AS3.yml --credential root-ssh --extra-vars "target_hosts=all bigip_port=8443 HTTP_METHOD=POST file_name=AS3-vip.json"
+        - tower-cli job_template associate_credential --credential aws-account --job-template "Post AS3 declaration"
+        - tower-cli workflow create --name "deploy_as3"
+        - tower-cli workflow schema deploy_as3 @/root/deploy_as3.yml
+        - tower-cli job_template create --name "create_bigip" --job-type run --inventory localhost --project ansible --playbook bigip_aws_awx.yml --ask-variables-on-launch "true" --extra-vars "target_hosts=all security_group=sg-000 subnet_id=subnet-000 keypair=keypair bigip_password=admin bigip_license=AAA"
+        - tower-cli job_template associate_credential --credential aws-account --job-template "create_bigip"
+        - tower-cli job_template create --name "install telegraf" --job-type run --inventory AWS --project ansible --playbook telegraf.yml --ask-variables-on-launch "true" --extra-vars "target_hosts=all beacon_access_token=AAA"
+        - tower-cli job_template associate_credential --credential root-ssh --job-template "install telegraf"
+        - tower-cli workflow schema webapp_workflow @/root/pacman_workflow.yml
+    - name: Install F5 SDK
+      shell: docker exec awx_task pip install f5-sdk

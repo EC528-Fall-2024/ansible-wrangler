@@ -1,0 +1,24 @@
+---
+# Ansible playbook for an ELK (Elasticsearch, Logstash, Kibana) logging server.
+#
+# original @author Jeff Geerling (2014).
+- hosts: elk
+  sudo: true
+
+  vars_files:
+    - vars/main.yml
+
+  vars:
+    logstash_main_server_common_name: "elk"
+    logstash_ssl_dir: /etc/pki/logstash
+    logstash_ssl_certificate_file: lumberjack.crt
+    logstash_ssl_key_file: lumberjack.key
+
+  roles:
+    #- { role : bastly.openssl }
+    - bastly.logstash
+    - bastly.java
+    - bastly.nginx
+    - bastly.elasticsearch
+    - bastly.elasticsearch-curator
+    - bastly.kibana

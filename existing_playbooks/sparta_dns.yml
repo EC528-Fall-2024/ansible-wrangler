@@ -1,0 +1,14 @@
+#!/usr/local/bin/ansible-playbook --inventory=inventory.yaml
+- name: '{{ ansible_name }} | coredns.yml' 
+  hosts: cloudctl
+  vars_files:
+    - 'vars/global.yml'
+    - 'vars/run.yml'
+    - '../cluster-vars.yml'
+  vars:
+    module: "coredns"
+    ansible_name_module: "{{ ansible_name }} | {{ module }}"
+    listen_address: "{{ lookup('env', 'PUBLISH_ADDRESS') | default(ansible_default_ipv4.address, true) }}"
+  roles:
+    - role: coredns
+      when: start_dns == true

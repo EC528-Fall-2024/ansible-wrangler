@@ -1,0 +1,49 @@
+---
+
+# http://serverfault.com/questions/638507/how-to-access-host-variable-of-a-different-host-with-ansible
+# We need some facts from the install node, specifically to find address of slurm controller.
+- name: grab facts from production nodes
+  hosts: production
+  tasks: [ ]
+
+- name: Grid Node
+  hosts: grid
+  remote_user: root
+  become: yes
+
+  roles: 
+  - { role: watermark-release, tags: [ 'always' ]  } 
+  - { role: ansible-role-fgci-repo, tags: [ 'fgci7', 'repos' ] }
+  - { role: ansible-role-yum, tags: [ 'yum', 'repos' ] }
+  - { role: ansible-role-ohpc-repo, tags: [ 'yum', 'repos', 'ohpc' ] }
+  - { role: ansible-role-ferm-firewall, tags: [ 'firewall', 'network' ] }
+  - { role: network_interface, tags: [ 'network' ] }
+  - { role: ansible-role-hosts-int, tags: [ 'hosts'] }
+  - { role: ip_forwarder, tags: [ 'network' ], 
+    when: internal_interface is defined and
+          external_interface is defined and
+          internal_net is defined and
+          internal_interface in ansible_interfaces and
+          external_interface in ansible_interfaces }
+  - { role: dns, tags: [ 'dns' ] }
+  - { role: ansible-role-chrony, tags: [ 'ntp', 'chrony' ] }
+  - { role: ansible-role-yum-cron-2, tags: [ 'yumcron' ] }
+  - { role: ansible-role-nis, tags: [ 'nis' ] }
+  - { role: ansible-role-nsswitch, tags: [ 'nsswitch', 'auth' ] }
+  - { role: ansible-role-nfs_mount, tags: [ 'nfsmount' ] }
+  - { role: ansible-role-autofs, tags: [ 'autofs' ] }
+  - { role: ansible-role-rsyslog, tags: [ 'rsyslog' ] }
+  - { role: ansible-role-open-vm-tools, tags: ['open-vm-tools'] }
+  - { role: ansible-role-slurm, tags: [ 'slurm' ] }
+  - { role: ansible-role-cvmfs, tags: [ 'cvmfs' ] }
+  - { role: ansible-role-sshd, tags: [ 'sshd', 'ssh' ] }
+  - { role: ansible-role-aliases, tags: [ 'aliases', 'email' ] }
+  - { role: ansible-role-arc-frontend-6, tags: [ 'arcfrontend' ] }
+  - { role: ansible-role-fgci-bash, tags: [ 'bash'] }
+#  - { role: ansible-role-collectd, tags: [ 'collectd', 'monitoring' ] }
+  - { role: ansible-role-postfix, tags: [ 'postfix', 'mail' ] }
+  - { role: ansible-role-systemd-journal, tags: [ 'systemd', 'journal', 'journald' ] }
+
+# Local addons to this playbook
+#
+- import_playbook: grid_local_play.yml

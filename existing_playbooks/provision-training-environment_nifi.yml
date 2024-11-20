@@ -1,0 +1,9 @@
+---
+
+- name: Ansible Playbook for installing nifi
+  hosts: master
+  remote_user: "{{ deployer }}"
+  vars_files:
+    - vars/common.yml
+  roles:
+    - nifi
