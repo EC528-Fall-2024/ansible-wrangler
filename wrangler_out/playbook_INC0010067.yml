@@ -1,41 +1,28 @@
 ---
-- name: Reset ServiceNow Password
+- name: ServiceNow Login Check and Troubleshoot
   hosts: localhost
   gather_facts: no
+  vars:
+    snow_instance_url: "https://your-instance.service-now.com"
+    snow_username: "your_username"
+    snow_password: "your_password"
+
   tasks:
-    - name: Retrieve user credentials from vault
-      include_vars:
-        file: service_now_credentials.yml
-        vault: yes
-
-    - name: Send password reset request to ServiceNow
+    - name: Check if can login to ServiceNow
       uri:
-        url: "https://your_instance.service-now.com/api/now/table/sys_user?sysparm_query=user_name={{ service_now_username }}"
+        url: "{{ snow_instance_url }}/api/now/table/incident?sysparm_limit=1"
         method: GET
-        headers:
-          Accept: "application/json"
-          Authorization: "Basic {{ service_now_credentials | b64encode }}"
+        user: "{{ snow_username }}"
+        password: "{{ snow_password }}"
+        force_basic_auth: yes
         validate_certs: no
-        status_code: 200
-      register: user_info
+      register: snow_login_response
 
-    - name: Extract sys_id from user info
-      set_fact:
-        sys_id: "{{ user_info.json.result[0].sys_id }}"
-
-    - name: Reset password for the user
-      uri:
-        url: "https://your_instance.service-now.com/api/now/table/sys_user/{{ sys_id }}"
-        method: PATCH
-        headers:
-          Accept: "application/json"
-          Authorization: "Basic {{ service_now_credentials | b64encode }}"
-        body_format: json
-        body:
-          password: "{{ new_password }}"
-        validate_certs: no
-        status_code: 200
-
-    - name: Notify of successful reset
+    - name: Debug login response
       debug:
-        msg: "Password for user {{ service_now_username }} has been reset."
+        var: snow_login_response.status
+
+    - name: Fail if login fails
+      fail:
+        msg: "Failed to login to ServiceNow"
+      when: snow_login_response.status != 200
