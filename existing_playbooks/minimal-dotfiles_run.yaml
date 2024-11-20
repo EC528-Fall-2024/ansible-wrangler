@@ -1,0 +1,28 @@
+#!/usr/bin/env ansible-playbook
+
+---
+
+- name: Minimal Dotfiles
+  hosts: all
+
+  vars_prompt:
+
+    - name: username
+      prompt: What is your remote username?
+      private: false
+
+  vars_files: variables.yaml
+
+  tasks:
+
+    - name: Install fzf, tmux, and vim
+      ansible.builtin.package:
+        state: present
+        name: "{{ pkgs }}"
+
+    - name: Copy dotfiles to remote
+      become_user: "{{ username }}"
+      ansible.builtin.copy:
+        src: "{{ item }}"
+        dest: "/home/{{ username }}/{{ item }}"
+      with_items: "{{ dotfiles }}"

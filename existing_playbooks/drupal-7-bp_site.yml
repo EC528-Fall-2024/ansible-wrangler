@@ -1,0 +1,121 @@
+# Ansible Playbook for Subutai WordPress blueprint
+---
+
+- hosts: drupal
+  remote_user: root
+  tasks:
+
+    - name: Disable dpkg fsync
+      raw: test -e /etc/dpkg/dpkg.cfg.d/unsafe-io || echo force-unsafe-io > /etc/dpkg/dpkg.cfg.d/unsafe-io
+
+    - name: Upgrade debian
+      apt:
+        update_cache: true
+        upgrade: true
+
+    - name: Install required debs
+      apt:
+        name: "{{ item }}"
+        state: present
+      with_items: 
+        - php7.0
+        - php7.0-cgi
+        - php7.0-cli
+        - php7.0-mysql
+        - php7.0-xml
+        - php7.0-mbstring
+        - php7.0-gd
+        - php7.0-curl
+        - apache2
+        - libapache2-mod-php7.0
+        - unzip 
+        - curl
+        - mariadb-server
+        - python-mysqldb
+
+    - name: Install limits.ini
+      template: 
+        src: files/limits.ini
+        dest: /etc/php/7.0/mods-available/limits.ini
+
+    - name: Activate limits.ini
+      shell: phpenmod limits
+
+    - name: Create database
+      mysql_db:
+        name: drupal7
+        state: present
+        encoding: utf8
+
+    - name: Create database user
+      mysql_user:
+        name: drupal7
+        password: drupal7
+        priv: "drupal7.*:ALL"
+
+    - name: Get drush
+      get_url:
+        url: https://github.com/drush-ops/drush/releases/download/8.1.18/drush.phar
+        dest: /usr/local/bin/drush
+        validate_certs: no
+
+    - name: Make drush executable
+      file:
+        path: /usr/local/bin/drush
+        state: touch
+        mode: u+rwx,g+rx,o+rx
+
+    - name: Download Drupal7 core
+      shell: drush dl drupal-7 --destination=/var/www  --drupal-project-rename=drupal -y
+      args:
+        chdir: /var/www
+        creates: /var/www/drupal/index.php
+
+    - name: Site Install with drush
+      shell: drush si standard --account-name="{{ admin_user }}" --account-mail="{{ email }}" --account-pass="{{ admin_pwd }}" --site-name="{{ site_title }}" --db-url=mysql://drupal7:drupal7@localhost/drupal7 -y
+      args: 
+        chdir: /var/www/drupal
+        creates: /var/www/drupal/sites/default/settings.php
+
+    - name: Remove original index.html
+      file:
+        name: /var/www/drupal/index.html
+        state: absent
+
+    - name: Change base_url on drupal settings file
+      become: true
+      lineinfile:
+        dest: /var/www/drupal/sites/default/settings.php
+        regexp: "# $base_url = 'http://www.example.com'; "
+        line: "$base_url = 'https://{{ domain_name }}';"
+        state: present
+
+    - name: Add https conf
+      become: true
+      lineinfile:
+        dest: /var/www/drupal/sites/default/settings.php
+        line: "$conf['https'] = TRUE;"
+        state: present
+
+    - name: Change ownership
+      file: 
+        path: /var/www/drupal
+        recurse: yes
+        owner: www-data
+        group: www-data
+
+    - name: Setup default site on apache
+      template: 
+        src: files/000-default.conf
+        dest: /etc/apache2/sites-available/000-default.conf
+        force: yes
+
+    - name: Enable mod_rewrite
+      apache2_module:
+        name: rewrite
+        state: present
+
+    - name: Restart apache
+      service:
+        name: apache2
+        state: restarted

@@ -1,0 +1,24 @@
+---
+- name: Set Default User
+  hosts: all
+  become: yes
+
+  tasks:
+  - name: Update User Group
+    user:
+      name: "defaultuser"
+      password: "<PASSWORD>"
+      path: "/home/defaultuser"
+      uid: "1000"
+
+  - name: Add User to Users Group
+    user:
+      name: "defaultuser"
+      password: "<PASSWORD>"
+      path: "/home/defaultuser"
+      groups: ["users"]
+
+  - name: Change Default Group
+    group:
+      name: "defaultgroup"
+      members: ["defaultuser"]

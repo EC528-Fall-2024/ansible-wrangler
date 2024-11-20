@@ -1,0 +1,12 @@
+#!/usr/bin/ansible-playbook --inventory=inventory
+- name: ' Sparta | Devkit'
+  hosts: local
+  vars:
+    module: 'devkit'
+    ansible_name_module: ' Sparta | Devkit'
+    sparta_path: '{{ local_home }}/Sparta/Git'
+  vars_files:
+    - 'vars/git.yml'
+
+- import_playbook: ./code/tree.yml         # Create base deploy directory tree
+- import_playbook: ./code/git.yml          # Pull git repos

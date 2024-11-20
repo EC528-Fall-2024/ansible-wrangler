@@ -1,0 +1,57 @@
+currently the ansible dict2items function is extracting exact match for key value , can this function be used or subset match ie. Nexus9000 C9300v Chassis should match with C9300 
+ChatGPT
+As of my last update in January 2022, the dict2items function in Ansible extracts exact matches for key-value pairs from a dictionary. It doesn't directly support subset matching or pattern matching for values. However, you can achieve subset matching by using Jinja2 filters or custom filters in Ansible.
+
+Here's a general approach you can take:
+
+Define Custom Filter: Write a custom Jinja2 filter that performs the subset matching logic.
+Register the Filter: Make the filter available to your Ansible playbook.
+Use the Filter: Apply the custom filter to the values extracted by dict2items.
+Here's a simplified example of how you might implement this:
+
+yaml
+Copy code
+# playbook.yml
+
+- hosts: localhost
+  tasks:
+    - name: Convert dictionary to items
+      set_fact:
+        dict_items: "{{ my_dict | dict2items }}"
+      vars:
+        my_dict:
+          key1: Nexus9000
+          key2: C9300v
+          key3: Chassis
+
+    - name: Filter items based on subset match
+      set_fact:
+        filtered_items: "{{ dict_items | my_custom_filter }}"
+      vars:
+        subset: "C9300"
+
+    - debug:
+        msg: "{{ filtered_items }}"
+python
+Copy code
+# filter_plugins/my_filters.py
+
+def subset_match(items, subset):
+    filtered_items = []
+    for item in items:
+        if subset in item.value:
+            filtered_items.append(item)
+    return filtered_items
+
+class FilterModule(object):
+    def filters(self):
+        return {
+            'my_custom_filter': subset_match,
+        }
+In this example:
+
+my_dict represents your initial dictionary.
+We use dict2items to convert the dictionary into a list of key-value pairs.
+Then, we define a custom filter my_custom_filter in my_filters.py that iterates over the items and checks for subset matches with the specified subset string.
+Finally, we apply this custom filter to the items obtained from dict2items in our playbook.
+You would need to adapt this example to fit your specific use case and ensure that the custom filter logic meets your requirements. Also, make sure to place the custom filter Python file (my_filters.py) in the appropriate location (filter_plugins/ directory relative to your playbook or in the Ansible library path).

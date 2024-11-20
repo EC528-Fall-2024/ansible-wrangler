@@ -1,0 +1,50 @@
+#!/usr/bin/env ansible-playbook
+---
+#==============================================================#
+# File      :   etcd.yml
+# Desc      :   init etcd on special group etcd
+# Ctime     :   2022-11-10
+# Mtime     :   2023-09-30
+# Path      :   etcd.yml
+# Author    :   Ruohang Feng (rh@vonng.com)
+# License   :   AGPLv3
+#==============================================================#
+- name: ETCD INIT
+  hosts: etcd
+  gather_facts: no
+  become: yes
+  roles:
+    - { role: node_id , tags: id  }
+    - { role: etcd }
+
+#---------------------------------------------------------------
+# Usage
+#---------------------------------------------------------------
+# 1. make sure etcd is defined
+#
+# etcd:
+#   hosts:
+#     10.10.10.10: { etcd_seq: 1 }
+#     10.10.10.11: { etcd_seq: 2 }
+#     10.10.10.12: { etcd_seq: 3 }
+#   vars:
+#     etcd_cluster: etcd
+#
+# 2. Run playbook: ./etcd.yml -l etcd
+#
+#---------------------------------------------------------------
+# Tasks
+#---------------------------------------------------------------
+# etcd_assert     : generate minio identity
+# etcd_install    : install etcd rpm packages
+# etcd_clean      : cleanup existing etcd
+#   - etcd_check  : check etcd instance is running
+#   - etcd_purge  : remove running etcd instance & data
+# etcd_dir        : create etcd data & conf dir
+# etcd_config     : generate etcd config
+#   - etcd_conf   : generate etcd main config
+#   - etcd_cert   : generate etcd ssl cert
+# etcd_launch     : launch etcd service
+# etcd_register   : register etcd to prometheus
+#---------------------------------------------------------------
+...

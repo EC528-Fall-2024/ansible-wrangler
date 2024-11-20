@@ -1,0 +1,11 @@
+---
+# This Ansible playbook is just a test of setting up various corners of a web
+# dev box automatically.
+
+- name: Do everything
+  # TODO Doesn't *really* apply to all hosts - just a dev setup.
+  hosts: all
+  # TODO Figure out how to handle permissions sanely.
+  sudo: yes
+  roles:
+    - avahi

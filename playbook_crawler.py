@@ -1,7 +1,7 @@
 import os
 import requests
 
-def search_ansible_playbooks(git_token, query="ansible playbook", language="yaml", per_page=100, download_folder="ansible_playbooks"):
+def search_ansible_playbooks(git_token, query="ansible playbook", language="yaml", per_page=1000, download_folder="existing_playbooks"):
     # GitHub API endpoint for searching repositories
     url = "https://api.github.com/search/code"
     

@@ -1,0 +1,73 @@
+- name: Proxmox configuration
+  hosts: ogd:&hypervisor
+  become: true
+  gather_facts: false
+  pre_tasks:
+    - name: End play for hypervisors that are detected falsely
+      ansible.builtin.meta: end_host
+      when: hypervisor is not defined
+  roles:
+    - role: lae.proxmox
+      vars:
+        # Would remove Proxmox completely.
+        # https://github.com/lae/ansible-role-proxmox/issues/223
+        pve_remove_old_kernels: false
+      tags: proxmox
+    - role: proxmox
+      tags: proxmox
+    - role: smartmontools
+      tags: smartmontools
+
+- name: Import Linux configuration playbook
+  tags: linux
+  ansible.builtin.import_playbook: _linux.yml
+  vars:
+    playbook_hosts: ogd:&linux
+
+- name: Import Fedora configuration playbook
+  tags: fedora
+  ansible.builtin.import_playbook: _fedora.yml
+  vars:
+    playbook_hosts: ogd:&fedora
+
+- name: Gateway configuration
+  hosts: gateway-ogd
+  become: true
+  gather_facts: false
+  roles:
+    - role: ssh
+      tags: ssh
+    - role: gateway
+      tags: gateway
+
+- name: Hosted services
+  hosts: finn
+  become: true
+  gather_facts: false
+  roles:
+    - role: smartmontools
+      tags: smartmontools
+    - role: docker
+      tags: docker
+    - role: dns-server
+      tags:
+        - dns-server
+        - container
+    - role: mqtt
+      tags:
+        - mqtt
+        - container
+    - role: traefik
+      tags:
+        - traefik
+        - container
+    - role: iobroker
+      tags:
+        - iobroker
+        - container
+    - role: logger
+      tags:
+        - logger
+        - container
+    - role: samba
+      tags: samba

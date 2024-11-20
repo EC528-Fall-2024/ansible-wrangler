@@ -1,0 +1,24 @@
+# linode galera ansible playbook
+
+# cluster pre-check
+- name: pre-check
+  hosts: galera_servers
+  user: root
+  vars_files:
+    - group_vars/galera/vars
+    - group_vars/galera/secret_vars
+  
+  roles:
+    - precheck
+
+# linodes
+- name: configure galera linodes
+  hosts: galera_servers
+  user: root
+  vars_files:
+    - group_vars/galera/vars
+    - group_vars/galera/secret_vars
+  
+  roles:
+    - common
+    - db

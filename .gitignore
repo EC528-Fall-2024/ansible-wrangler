@@ -101,3 +101,5 @@ $RECYCLE.BIN/
 .github/
 
 ansible_playbooks
+
+!.env

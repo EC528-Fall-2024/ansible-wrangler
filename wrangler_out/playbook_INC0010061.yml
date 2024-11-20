@@ -1,0 +1,8 @@
+---
+- name: Test Task
+  hosts: all
+  become: yes
+
+  tasks:
+  - name: Run test script
+    shell: test.py

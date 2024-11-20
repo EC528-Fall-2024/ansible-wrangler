@@ -1,0 +1,72 @@
+# ansible-playbook --ask-sudo-pass -i "localhost," -c local work.yml
+---
+- hosts: localhost
+  connection: local
+
+  become_user: root
+  become: true
+
+  vars:
+    rstudio_version: 0.99.484-amd64
+
+  tasks:
+
+    # R
+
+    - name: Add CRAN GPG key
+      tags: R
+      apt_key: id=0xE084DAB9 keyserver=keyserver.ubuntu.com
+
+    - name: Add CRAN repository
+      tags: R
+      apt_repository: repo='deb http://cran.rstudio.com/bin/linux/ubuntu {{ ansible_distribution_release }}/'
+
+    - name: Install R
+      tags: R
+      apt: name=r-base state=latest
+
+    # TODO: Fixing unknown error R failing when run through Ansible, but
+    #       commands function properly on the command line.
+    #
+    # - name: R dependencies
+    #   shell: Rscript -e "if (!('{{ item }}' %in% installed.packages()[,'Package'])) { install.packages('{{ item }}', repos='http://cran.rstudio.com/', quiet=TRUE); }; if (!('{{ item }}' %in% installed.packages()[,'Package'])) { stop('{{ item }} was NOT installed'); };"
+    #   with_items:
+    #     - SDMTools
+    #     - weights
+    #     - ggplot2
+    #     - zoo
+    #     - dplyr
+    #     - forecast
+    #     - fitdistrplus
+    #     - fpc
+    #     - truncdist
+    #     - dgof
+    #
+    # sudo R -e "if (!('devtools' %in% installed.packages()[,'Package'])) { install.packages('devtools', repos='http://cran.rstudio.com/', quiet=TRUE); }; if (!('devtools' %in% installed.packages()[,'Package'])) { stop('devtools was NOT installed'); };"
+    # sudo R --quiet -e "if(!('osmutil' %in% installed.packages()[, 'Package'])) { devtools::install_git('git@git.orm-tech.com:ORM/osmutil.git', branch = 'v1.0.0', quiet=TRUE); }; if (!('osmutil' %in% installed.packages()[,'Package'])) { stop('osmutil was NOT installed'); };"
+
+    # RStudio
+
+    - name: RStudio dependencies
+      tags: rstudio
+      apt: name={{ item }} state=latest
+      with_items:
+        - libjpeg62
+
+    - name: RStudio downloading version {{ rstudio_version }}
+      tags: rstudio
+      get_url: url=https://download1.rstudio.org/rstudio-{{ rstudio_version }}.deb
+               dest=/opt/rstudio-{{ rstudio_version }}.deb
+               validate_certs=no
+
+    - name: Install RStudio
+      tags: rstudio
+      apt: deb=/opt/rstudio-{{ rstudio_version }}.deb
+
+    # VirtualBox
+
+    - name: VirtualBox
+      tags: virtualbox
+      apt: name={{ item }} state=latest
+      with_items:
+        - virtualbox

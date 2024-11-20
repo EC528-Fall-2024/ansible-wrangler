@@ -1,0 +1,142 @@
+# Ansible Playbook for Subutai Elasticsearch Blueprint
+--- 
+
+- hosts: elasticsearch
+  remote_user: root
+  tasks:
+
+    - debug: var=ansible_default_ipv4.address
+
+    # -------------------------------------------------------------------------
+    # Freshen up the host
+    # -------------------------------------------------------------------------
+
+    - name: Disable dpkg fsync
+      raw: test -e /etc/dpkg/dpkg.cfg.d/unsafe-io || echo force-unsafe-io > /etc/dpkg/dpkg.cfg.d/unsafe-io
+
+    - name: Upgrade packages
+      apt:
+        update_cache: true
+        upgrade: true
+
+    # -------------------------------------------------------------------------
+    # Install shit that should be there and fix locales
+    # -------------------------------------------------------------------------
+
+    - name: Install setup tools
+      apt:
+        name: 
+          - dirmngr
+          - apt-transport-https
+          - ca-certificates
+          - sudo
+          - locales
+          - curl
+          - default-jdk
+
+    - name: Transfer locales_setup.sh
+      copy: src=locales_setup.sh dest=/root/locales_setup.sh
+
+    - name: Execute locales_setup.sh
+      command: bash /root/locales_setup.sh
+
+    # -------------------------------------------------------------------------
+    # Elasticsearch User, Install, Configs
+    # -------------------------------------------------------------------------
+
+    - name: Create elasticsearch user
+      user:
+        name: elasticsearch
+        password: "{{ subutai.user_variables.password }}"
+        state: present
+        shell: /bin/bash
+        system: no
+        createhome: yes
+        home: /var/lib/elasticsearch
+
+    - name: Download ES tarball
+      get_url:
+        url: https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-6.5.4.tar.gz
+        dest: /var/lib/elasticsearch/elasticsearch-6.5.4.tar.gz
+      become: yes
+      become_user: elasticsearch
+  
+    - name: Create /usr/share/elasticsearch
+      file:
+        path: /usr/share/elasticsearch
+        state: directory
+        mode: 0755
+        owner: elasticsearch
+        group: elasticsearch
+
+    - name: Create data directory
+      file:
+        path: /var/lib/elasticsearch/data
+        state: directory
+        mode: 0755
+        owner: elasticsearch
+        group: elasticsearch
+
+    - name: Create log directory
+      file:
+        path: /var/log/elasticsearch
+        state: directory
+        mode: 0755
+        owner: elasticsearch
+        group: elasticsearch
+
+    - name: Untar elasticsearch tarball
+      unarchive: 
+        src: /var/lib/elasticsearch/elasticsearch-6.5.4.tar.gz
+        dest: /usr/share/elasticsearch
+        remote_src: yes
+        extra_opts:
+          - --strip-components=1
+      become: yes
+      become_user: elasticsearch
+      
+    # purposefully not using this elasticsearch_plugin 
+    - name: Remove analysis-icu plugin
+      command: /usr/share/elasticsearch/bin/elasticsearch-plugin remove analysis-icu
+      ignore_errors: yes
+      become: yes
+      become_user: elasticsearch
+    
+    # purposefully not using this elasticsearch_plugin 
+    - name: Install the analysis-icu plugin
+      command: /usr/share/elasticsearch/bin/elasticsearch-plugin --silent install analysis-icu
+      become: yes
+      become_user: elasticsearch
+
+    - name: Install the systemd initialization file
+      copy:
+        src: elasticsearch.service
+        dest: /etc/systemd/system/elasticsearch.service
+
+    - name: Massage elasticsearch.service values
+      lineinfile:
+        path: /etc/systemd/system/elasticsearch.service
+        regexp: '.*network.host=$'
+        line: 'ExecStart=/usr/share/elasticsearch/bin/elasticsearch -E discovery.type=single-node -E path.data=/var/lib/elasticsearch/data -E path.logs=/var/log/elasticsearch -E network.host={{ ansible_default_ipv4.address }}'
+
+    - name: Systemd reload for enabling elasticsearch service
+      systemd:
+        name: elasticsearch
+        state: started
+        enabled: yes
+        daemon_reload: yes
+   
+    - name: Wait for the app to come up
+      wait_for:
+        port: 9200
+        host: "{{ ansible_default_ipv4.address }}"
+        delay: 30
+        timeout: 100
+
+    - name: Check plugin installation
+      uri:
+        url: http://{{ ansible_default_ipv4.address }}:9200/_cat/plugins
+        register: response
+        failed_when: "'analysis-icu' not in response.content"
+      retries: 3
+      delay: 10

@@ -1,0 +1,107 @@
+version: 1.0
+name: galera-apb
+description: Deploy Galera for MySQL with a Replication Operator
+bindable: True
+async: optional
+metadata:
+  displayName: Galera Cluster for MySQL
+  documentationUrl: "https://github.com/beekhof/galera-container/"
+  longDescription: "An Ansible Playbook Bundle (APB) that deploys a Galera cluster for MySQL managed by a replication operator"
+tags:
+  - database
+  - galera
+plans:
+  - name: ephemeral
+    description: This plan deploys an ephemeral Galera cluster on Linux
+    free: True
+    metadata: {}
+    parameters:
+      - name: admin_user
+        title: Openshift Admin User
+        type: string
+        default: developer
+        required: true
+      - name: admin_password
+        title: Openshift Admin Password
+        type: string
+        display_type: password
+        default: password
+        required: true
+      - name: service_name
+        description: The name of the service. Used to name and label resources
+        type: string
+        default: galera
+        pattern: "^[a-zA-Z0-9]+[a-zA-Z0-9-]*[a-zA-Z0-9]+$"
+        required: true
+      - name: service_replicas
+        title: Number of database replicas
+        type: number
+        default: 3
+        required: true
+      - name: mysql_database
+        description: The name of the MySQL database
+        type: string
+        default: sample
+        pattern: "^[a-zA-Z0-9_]*[a-zA-Z_]+[a-zA-Z0-9_]*$"
+        required: true
+      - name: mysql_user
+        description: Username that will be used to connect to MySQL
+        type: string
+        pattern: "^[a-zA-Z0-9_]*[a-zA-Z_]+[a-zA-Z0-9_]*$"
+        default: admin
+        required: true
+      - name: mysql_password
+        description: Password to connect to MySQL (generated if blank)
+        type: string
+        required: true
+        display_type: password
+        default: admin
+  - name: persistent
+    description: This plan deploys a persistent Galera cluster on Linux
+    free: True
+    metadata: {}
+    parameters:
+      - name: admin_user
+        title: Openshift Admin User
+        type: string
+        default: developer
+        #required: true
+      - name: admin_password
+        title: Openshift Admin Password
+        type: string
+        display_type: password
+        default: password
+      - name: service_name
+        description: The name of the service. Used to name and label resources
+        type: string
+        default: galera
+        pattern: "^[a-zA-Z0-9]+[a-zA-Z0-9-]*[a-zA-Z0-9]+$"
+        required: true
+      - name: service_replicas
+        title: Number of database replicas
+        type: number
+        default: 3
+      - name: mysql_database
+        description: The name of the MySQL database
+        type: string
+        default: sample
+        pattern: "^[a-zA-Z0-9_]*[a-zA-Z_]+[a-zA-Z0-9_]*$"
+        required: true
+      - name: mysql_user
+        description: Username that will be used to connect to MySQL
+        type: string
+        pattern: "^[a-zA-Z0-9_]*[a-zA-Z_]+[a-zA-Z0-9_]*$"
+        default: admin
+        required: true
+      - name: mysql_password
+        description: Password to connect to MySQL (generated if blank)
+        type: string
+        required: true
+        display_type: password
+        default: admin
+      - name: volume_size
+        type: enum
+        default: '1Gi'
+        enum: ['1Gi', '5Gi', '10Gi']
+        title: MySQL Volume Size
+        required: true

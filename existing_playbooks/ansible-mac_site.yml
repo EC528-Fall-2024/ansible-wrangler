@@ -1,0 +1,22 @@
+---
+- name: Ansible playbook for configuring my Mac workstation
+  hosts: localhost
+  roles:
+    - role: ansible-git
+      when: configure_git
+    - role: ansible-hosts
+      when: configure_hosts
+    - role: ansible-shell-mac
+      when: configure_shell
+    - role: ansible-yubikey
+      when: configure_yubikey
+    - role: ansible-ssh
+      when: configure_ssh
+    - role: ansible-osx_defaults
+      when: configure_osx
+    - role: ansible-homebrew
+      when: configure_brew
+    - role: ansible-vscode
+      when: configure_vscode
+    - role: ansible-mas
+      when: configure_mas

@@ -1,0 +1,9 @@
+---
+- name: Test telegram module
+  hosts: localhost
+
+  tasks:
+    - telegram:
+        token: "*****"
+        chat_id: *****
+        msg: "Ansible playbook calling"

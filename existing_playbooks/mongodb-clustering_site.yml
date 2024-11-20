@@ -1,0 +1,22 @@
+---
+# Main file for this Ansible Playbook, installing MongoDB from scratch if needed,
+# then setting up a cluster according to the machines in the host.
+#
+# Author: Valentin DAMBRINE <val.dambrine97@gmail.com>
+#
+# Date: March, 07th 2020
+
+- hosts: mongo
+  remote_user: root
+  roles:
+    - common
+
+- hosts: mongo-cfg
+  remote_user: root
+  roles:
+    - mongo-config
+
+- hosts: mongo-shard
+  remote_user: root
+  roles:
+    - mongo-shard

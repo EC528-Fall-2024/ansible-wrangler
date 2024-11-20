@@ -1,0 +1,16 @@
+# Ansible playbook comprimises of hosts and task which in turns
+# contains task name and module name 
+--- # start of index
+- host: webserver
+  become: yes
+  tasks:
+  - name: Installing httpd 
+    yum:
+      name: httpd
+      state: latest
+  - name: Starting the httpd
+    service:
+      name: httpd
+      status: started
+
+# ansible-playbook -i inv web.yml --check

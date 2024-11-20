@@ -1,48 +1,76 @@
-import requests 
+import requests
 from requests.auth import HTTPBasicAuth
 import json
 import os
-from llama_interface import generate_ansible_playbook, evaluate_playbooks_with_llama, create_faiss_index
-from git_interface import upload_new_playbook_to_repo
+import time
+import subprocess
+from dotenv import load_dotenv
+from llama_interface import generate_ansible_playbook, create_faiss_index
+from awx import create_job_template, launch_job, track_job, trigger_project_update
 from utils import check_gpu_availability
-
+# Load environment variables
+load_dotenv(override=True)
 use_gpu=check_gpu_availability()
-
+print(f'GPU: {use_gpu}')
 # Connect to ServiceNow API
-# ServiceNow Instance Profile
-instance = 'https://dev248794.service-now.com'
-username = 'admin'
-password = '$1sh2t+VcALL'
-
+instance = os.getenv("INSTANCE")
+username = os.getenv("USERNAME")
+password = os.getenv("PASSWORD")
+journal_endpoint = '/api/now/table/sys_journal_field'
 endpoint = '/api/now/table/incident'
 user_endpoint = '/api/now/table/sys_user'
-
-github_token = ""  # Replace with your actual GitHub token
-file_path = "existing_playbooks/my_new_playbook.yaml"  # Specify the file path in the repo
-
-REPO_OWNER = "EC528-Fall-2024"  # Your GitHub organization or username
-REPO_NAME = "ansible-wrangler"  # Your repository name
-BRANCH_NAME = "main"  # The branch where you want to add the playbook
-GITHUB_API_URL = f"https://api.github.com/repos/{REPO_OWNER}/{REPO_NAME}"
-
+PLAYBOOKS_DIR = 'existing_playbooks/' 
 # Form the complete URL with filters and ordering by number in ascending order
-user_name = 'Service Desk'  # desired user name to find the sys_id
-incident_number = 'INC0010007'  # desired incident number to find the playbook for
+user_name = "System Administrator" ## UPDATE USER
 url = instance + user_endpoint + "?sysparm_query=name=" + user_name
+
+# Define GitHub repository details
+git_repo_url = os.getenv("GITHUB_URL")
+branch = os.getenv("BRANCH")
+existing_directory = os.getenv("EXISTING_DIRECTORY")
+out_directory = os.getenv("OUT_DIRECTORY")
 
 headers = {
     "Content-Type": "application/json",
     "Accept": "application/json"
 }
 
-
-
-
 # Fetch user sys_id
+create_faiss_index(use_gpu=use_gpu)
+
+
+
+def update_incident(url, payload, headers, username, password):
+    response = requests.patch(url, json=payload, headers=headers, auth=HTTPBasicAuth(username, password))
+    if response.status_code != 200: 
+        print('Status:', response.status_code, 'Headers:', response.headers, 'Error Response:',response.json())
+    return
+
+def awx(incident_number, playbook):
+    playbook_filename = f"playbook_{incident_number}.yml"
+    repo_path = os.path.abspath('.')
+    saved_directory = os.path.join(repo_path, out_directory)
+    os.makedirs(saved_directory, exist_ok=True)
+    playbook_path = os.path.join(saved_directory, playbook_filename)
+    with open(playbook_path, 'w') as f:
+        f.write(playbook)
+    # Commit and push the accepted playbook to Git
+    subprocess.run(['git', 'add', playbook_path], cwd=repo_path)    
+    subprocess.run(['git', 'commit', '-m', f'Add playbook for incident {incident_number}'], cwd=repo_path)
+    subprocess.run(['git', 'push', 'origin', branch], cwd=repo_path)
+    # Trigger project update in AWX to sync the latest playbooks
+    project_id = int(os.getenv("PROJECT_ID"))
+    trigger_project_update(project_id)
+    # Set playbook path for AWX
+    awx_playbook_path = f"{out_directory}/{playbook_filename}"
+    # Use AWX to run the playbook
+    job_template_id = create_job_template(awx_playbook_path)
+    job_id = launch_job(job_template_id)
+    job_status = track_job(job_id)
+    return job_status
+
 response = requests.get(url, headers=headers, auth=HTTPBasicAuth(username, password))
-
 if response.status_code == 200:
-
     data = response.json()
     if len(data['result']) > 0:
         caller_sys_id = data['result'][0]['sys_id']
@@ -55,53 +83,109 @@ else:
     exit()
 
 # Updated filter query using the sys_id
-filter_query = f"caller_id={caller_sys_id}^active=true^universal_requestISEMPTY"
-url = instance + endpoint + "?sysparm_query=" + filter_query
-
 # Fetch incident data
-response = requests.get(url, headers=headers, auth=HTTPBasicAuth(username, password))
+create_faiss_index(use_gpu=use_gpu)
+while True:
+    filter_query = f"caller_id={caller_sys_id}^active=true^universal_requestISEMPTY&sysparm_fields=number,short_description,state,description,sys_id"
+    url = instance + endpoint + "?sysparm_query=" + filter_query
+    response = requests.get(url, headers=headers, auth=HTTPBasicAuth(username, password))
 
-outputs =[]
-
-
-if response.status_code == 200:
-
-    create_faiss_index(use_gpu=use_gpu)
-
-    data = response.json()
-    
-    # If no incidents are found
-    if len(data['result']) == 0:
-        print("No incidents found for the user.")
-    
-    # Output required fields for each incident
-
-
-    #print(data['result'])
-    for incident in data['result']:
-        if(incident.get("number") == incident_number):
+    if response.status_code == 200:
         
-            
-            playbook = generate_ansible_playbook(incident.get("short_description"), use_gpu=use_gpu)
-            
-            output = {
-                "short_description": incident.get("short_description"),
-                "description": incident.get("description"),
-                "number": incident.get("number"),
-                "state": incident.get("state"),
-                "suggested_playbook": playbook
-            }
-            print("\n\nIncident details:")
-            print("Description: ", output["short_description"])
-            print("Incident Number: ", output["number"])
-            print("\n\nSuggested playbook:")
-            print("Playbook: ", playbook)
+        data = response.json()
+        # If no incidents are found
+        if len(data['result']) == 0:
+            print("No incidents found for the user.")
+            continue
+        
+        # Output required fields for each incident
+        for incident in data['result']:
+            incident_number = incident.get("number")
+            incident_state = incident.get("state")
+            incident_sys_id = incident.get("sys_id")
+            # Check if incident is already processed
+            if incident_state in ["3","4","5","6"] :
+                continue
+            else:
+                description = incident.get("description")
+                short_description = incident.get("short_description")
+                if incident_state == "1":
+                    update_url = instance + endpoint + '/' + incident_sys_id
+                    payload = {
+                        'state' : 2,
+                        'comments': (
+                            'Hello,\n\nWe have received your incident and are currently in the process of generating the playbook. '
+                            'Once the playbook is ready, we will validate it using AWX and then send it to you for review. '
+                            'You have two options:\n'
+                            '- Send "Accept" if the playbook meets your needs, and we will change the incident state to Resolved.\n'
+                            '- Send "Regenerate" if the playbook does not meet your requirements, and we will generate a new one.\n\n'
+                            'Thank you for your patience!'
+                        )
+                    }
+                    response = requests.patch(update_url, json=payload, headers=headers, auth=HTTPBasicAuth(username, password))
+                    if response.status_code != 200: 
+                        print('Status:', response.status_code, 'Headers:', response.headers, 'Error Response:',response.json())
+                    playbook = generate_ansible_playbook(description, use_gpu=use_gpu)
+                    job_status = awx(incident_number,playbook)
+                    while (job_status == "failed"):
+                        playbook = generate_ansible_playbook(description,use_gpu=use_gpu)
+                        job_status = awx(incident_number,playbook)
+                    payload = {
+                        'comments': (
+                            'The playbook has been generated and validated. Here it is:\n\n'
+                            f'{playbook}\n\n'
+                            'You have two options:\n'
+                            '- Send "Accept" if this playbook works for you, and we will resolve the incident.\n'
+                            '- Send "Regenerate" if this does not meet your requirements, and we will generate a new one.\n\n'
+                            'Looking forward to your response!'
+                        )
+                    }
+                    response = requests.patch(update_url, json=payload, headers=headers, auth=HTTPBasicAuth(username, password))
+                    if response.status_code != 200: 
+                        print('Status:', response.status_code, 'Headers:', response.headers, 'Error Response:',response.json())
+                else:
+                    url = instance + journal_endpoint
+                    params = {
+                        'sysparm_query': f'element_id={incident_sys_id}^element=comments'
+                    }
+                    response = requests.get(url,auth=HTTPBasicAuth(username, password),headers=headers,params=params)
+                    data = response.json().get('result', [])
+                    sorted_comments = sorted(data, key=lambda x: x['sys_created_on'], reverse=True)
+                    latest_comment = sorted_comments[0]["value"]
+                    if latest_comment == "Regenerate":
+                        update_url = instance + endpoint + '/' + incident_sys_id
+                        playbook= generate_ansible_playbook(description,use_gpu=use_gpu)
+                        job_status = awx(incident_number,playbook)
+                        while (job_status == "failed"):
+                            playbook = generate_ansible_playbook(description,use_gpu=use_gpu)
+                            job_status = awx(incident_number,playbook)
+                        payload = {
+                        'comments': (
+                                'The playbook has been generated and validated. Here it is:\n\n'
+                                f'{playbook}\n\n'
+                                'You have two options:\n'
+                                '- Send "Accept" if this playbook works for you, and we will resolve the incident.\n'
+                                '- Send "Regenerate" if this does not meet your requirements, and we will generate a new one.\n\n'
+                                'Looking forward to your response!'
+                            )
+                        }
+                        response = requests.patch(update_url, json=payload, headers=headers, auth=HTTPBasicAuth(username, password))
+                        if response.status_code != 200: 
+                            print('Status:', response.status_code, 'Headers:', response.headers, 'Error Response:',response.json())
+                    if latest_comment == "Accept":
+                        with open(f'{PLAYBOOKS_DIR}playbook_{incident_number}.yml', 'w') as file:
+                            file.write(playbook)
+                        update_url = instance + endpoint + '/' + incident_sys_id
+                        payload = {
+                            'state' : 6,
+                            'comments': 'Thank you for accepting the playbook. Since you approved it, we are changing the incident state to Resolved.'
+                        }
+                        response = requests.patch(update_url, json=payload, headers=headers, auth=HTTPBasicAuth(username, password))
+                        if response.status_code != 200: 
+                            print('Status:', response.status_code, 'Headers:', response.headers, 'Error Response:',response.json())
+    else:
+        print(f"Error: {response.status_code}, {response.text}")
 
-else:
-    print(f"Error: {response.status_code}, {response.text}")
-
-if github_token != "":
-    i=10
-    for output in outputs:
-        upload_new_playbook_to_repo(BRANCH_NAME, file_path.split('.')[0]+str(i)+'.yaml', output["suggested_playbook"], GITHUB_API_URL, github_token)
-        i+=1
+    # Wait 0.2 seconds before checking for new incidents again
+    time.sleep(0.2)
+    

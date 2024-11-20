@@ -1,7 +1,0 @@
----
-- hosts: all
-  tasks:
-    - name: Add a line to a file
-      lineinfile:
-        path: /etc/hosts
-        line: "127.0.0.1 localhost"

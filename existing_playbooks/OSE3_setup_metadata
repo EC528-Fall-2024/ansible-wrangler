@@ -1,0 +1,62 @@
+#cloud-config      
+# vim:syntax=yaml
+hostname: example
+fqdn: example.example.com
+manage_etc_hosts: false
+debug: True
+ssh_pwauth: True
+disable_root: false
+chpasswd:
+  list: |
+    root:redhat
+    cloud-user:test
+  expire: false
+write_files:
+  - path: /etc/sysconfig/docker-storage-setup
+    permissions: 0644
+    owner: root
+    content: |
+      DEVS=/dev/vdb
+      VG=docker-vg
+      SETUP_LVM_THIN_POOL=yes
+  - path: /root/docker_images.sh
+    permissions: 0777
+    owner: root
+    content: |
+      #! /bin/bash
+      for N in jenkins-1-rhel7 mongodb-24-rhel7 mysql-55-rhel7 nodejs-010-rhel7 ose-deployer ose-docker-builder ose-docker-registry ose-f5-router ose-haproxy-router ose-keepalived-ipfailover ose-pod ose-sti-builder perl-516-rhel7 php-55-rhel7 postgresql-92-rhel7 python-33-rhel7 ruby-20-rhel7 ; do docker pull openshift3/$N ; done
+  - path: /root/README
+    permissions: 0777
+    owner: root
+    content: |
+      1. To pull the recommended docker images run `~/docker_images.sh`
+      2. For Masters, run `ssh-keygen` providing now password and then `ssh-copy-id` to all nodes and itself.
+      3. Setup the DNS
+      4. Edit the /etc/ansible/hosts file
+      5. Run `ansible-playbook ~/openshift-ansible/playbooks/byo/config.yml`
+runcmd:
+- echo "MTU=1450" >> /etc/sysconfig/network-scripts/ifcfg-eth0
+- service network restart
+- echo 'StrictHostKeyChecking no' >> /etc/ssh/ssh_config
+- echo 'UserKnownHostsFile /dev/null' >> /etc/ssh/ssh_config
+- sed -i'.orig' -e's/without-password/yes/' /etc/ssh/sshd_config
+- systemctl restart sshd
+- exit_code=255; while [ $exit_code != 0 ]; do subscription-manager register --force --username=USERNAME --password='PASSWORD'; exit_code=$?; done
+- exit_code=255; while [ $exit_code == 255 ]; do subscription-manager subscribe --auto; exit_code=$?; done
+- subscription-manager repos --disable='*'
+- subscription-manager repos --enable='rhel-7-server-ose-3.0-rpms' --enable='rhel-7-server-extras-rpms' --enable='rhel-7-server-optional-rpms' --enable='rhel-7-server-rpms'
+- yum -y install docker wget git net-tools bind-utils iptables-services bridge-utils python-virtualenv gcc lvm2.x86_64 vim bash-completion
+- systemctl stop NetworkManager ; systemctl disable NetworkManager ; systemctl stop firewalld ; systemctl disable firewalld ; systemctl stop docker
+- systemctl restart network; systemctl enable network
+- sed -i -e "s/# BLOCK_REGISTRY='--block-registry'/BLOCK_REGISTRY='--block-registry public'/" /etc/sysconfig/docker
+- lvmconf --disable-cluster
+- umount /dev/vdb
+- docker-storage-setup
+- systemctl --no-block restart docker
+###UNCOMMENT FOR MASTERS######################################
+#- cd ~
+#- git clone https://github.com/openshift/openshift-ansible
+#- yum install -y https://dl.fedoraproject.org/pub/epel/7/x86_64/e/epel-release-7-5.noarch.rpm
+#- sed -i -e "s/^enabled=1/enabled=0/" /etc/yum.repos.d/epel.repo
+#- yum -y --enablerepo=epel install ansible
+##############################################################
