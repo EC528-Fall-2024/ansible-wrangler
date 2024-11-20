@@ -1,17 +1,17 @@
 ---
-- name: Restart Apache
+- name: Restart Apache Web Server
   hosts: all
   become: true
+
   tasks:
-    - name: Check if Apache is running
-      service: name=apache state=started enabled=yes
-      register: apache_service
-    
-    - name: Check if Apache process exists
-      shell: "pgrep -f apache"
-      ignore_errors: true
-      register: apache_process
-      
-    - name: Restart Apache service
-      service: name=apache state=restarted enabled=yes
-      when: apache_service.status == 'started' and not apache_process.stdout
+  - name: Stop Apache service
+    service:
+      name: httpd
+      state: stopped
+      enabled: no
+
+  - name: Start Apache service
+    service:
+      name: httpd
+      state: started
+      enabled: yes
