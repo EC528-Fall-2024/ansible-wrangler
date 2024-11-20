@@ -1,21 +1,10 @@
 ---
-- name: Apache Web Server Not Responding
+- name: Apache Web Server Issue
   hosts: localhost
-  gather_facts: no
   become: yes
 
-  tasks:
-  - name: Check Apache Process List
-    command: ps -ef | grep httpd
-    register: apache_process_list
-
-  - name: Verify Apache Status
-    debug:
-      msg: "{{ apache_process_list.stdout }}"
-    when: apache_process_list.stdout is defined and len(apache_process_list.stdout) > 0
-
-  - name: Restart Apache Server if not found
-    service:
-      name: httpd
-      state: restarted
-      restart: always
+  roles:
+    - ansible-playbook
+      playbook_name: apache
+      vars:
+        httpd_status: "404"
