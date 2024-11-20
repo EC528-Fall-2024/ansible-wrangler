@@ -1,22 +1,15 @@
 ---
-- name: ServiceNow Login Check
+- name: Check ServiceNow Accessibility
   hosts: localhost
-  gather_facts: no
   tasks:
-    - name: Send GET request to ServiceNow instance
+    - name: Verify ServiceNow URL is reachable
       uri:
-        url: "https://your_instance.service-now.com/api/now/table/incident"
-        method: GET
-        validate_certs: yes
-        user: your_username
-        password: your_password
-        force_basic_auth: yes
+        url: "https://your-servicenow-instance.service-now.com"
+        validate_certs: no
+        return_content: yes
       register: response
 
-    - name: Display response status code
-      debug:
-        var: response.status_code
-
-    - name: Display response content
-      debug:
-        var: response.content
+    - name: Check HTTP status code
+      fail:
+        msg: "ServiceNow instance is not accessible. HTTP Status Code: {{ response.status_code }}"
+      when: response.status_code != 200
