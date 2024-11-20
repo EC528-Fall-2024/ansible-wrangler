@@ -1,25 +1,23 @@
 ---
-- name: Check ServiceNow connectivity
+- name: ServiceNow Login Check
   hosts: localhost
   gather_facts: no
+  vars:
+    sn_instance: "your_service_now_instance"
+    sn_username: "your_username"
+    sn_password: "your_password"
+
   tasks:
-    - name: Test ServiceNow API connection
+    - name: Ensure ServiceNow instance is reachable and login credentials are valid
       uri:
-        url: "https://your_instance.service-now.com/api/now/table/incident"
+        url: "https://{{ sn_instance }}.service-now.com/api/now/table/incident?sysparm_limit=1"
         method: GET
-        headers:
-          Accept: application/json
-        validate_certs: yes
-        user: your_username
-        password: your_password
-        force_basic_auth: yes
+        user: "{{ sn_username }}"
+        password: "{{ sn_password }}"
+        validate_certs: no
+        status_code: 200
       register: response
 
-    - name: Display response status code
+    - name: Debug response for troubleshooting if needed
       debug:
-        msg: "Response Status Code: {{ response.status_code }}"
-
-    - name: Fail if connection was unsuccessful
-      fail:
-        msg: "Failed to connect to ServiceNow. Response Status Code: {{ response.status_code }}"
-      when: response.status_code != 200
+        var: response
