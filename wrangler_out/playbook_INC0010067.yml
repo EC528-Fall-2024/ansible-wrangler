@@ -1,29 +1,41 @@
 ---
-- name: ServiceNow Login Verification
+- name: Reset ServiceNow Password
   hosts: localhost
   gather_facts: no
-  vars:
-    snow_instance: "your_instance_name"
-    snow_username: "your_username"
-    snow_password: "your_password"
-
   tasks:
-    - name: Retrieve System ID using basic authentication
+    - name: Retrieve user credentials from vault
+      include_vars:
+        file: service_now_credentials.yml
+        vault: yes
+
+    - name: Send password reset request to ServiceNow
       uri:
-        url: "https://{{ snow_instance }}.service-now.com/api/now/table/sys_user?sysparm_query=user_name={{ snow_username }}"
+        url: "https://your_instance.service-now.com/api/now/table/sys_user?sysparm_query=user_name={{ service_now_username }}"
         method: GET
+        headers:
+          Accept: "application/json"
+          Authorization: "Basic {{ service_now_credentials | b64encode }}"
         validate_certs: no
-        user: "{{ snow_username }}"
-        password: "{{ snow_password }}"
         status_code: 200
-      register: response
+      register: user_info
 
-    - name: Check if login was successful
+    - name: Extract sys_id from user info
+      set_fact:
+        sys_id: "{{ user_info.json.result[0].sys_id }}"
+
+    - name: Reset password for the user
+      uri:
+        url: "https://your_instance.service-now.com/api/now/table/sys_user/{{ sys_id }}"
+        method: PATCH
+        headers:
+          Accept: "application/json"
+          Authorization: "Basic {{ service_now_credentials | b64encode }}"
+        body_format: json
+        body:
+          password: "{{ new_password }}"
+        validate_certs: no
+        status_code: 200
+
+    - name: Notify of successful reset
       debug:
-        msg: "Login successful. System ID: {{ response.json.result[0].sys_id }}"
-      when: response.status == 200 and response.json.result | length > 0
-
-    - name: Fail if login failed
-      fail:
-        msg: "Failed to log in. Check your credentials."
-      when: response.status != 200 or response.json.result | length == 0
+        msg: "Password for user {{ service_now_username }} has been reset."
