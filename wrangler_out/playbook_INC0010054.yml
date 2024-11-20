@@ -1,16 +1,21 @@
 ---
-- name: Apache Web Server Issue
+- name: Apache Server Not Responding
   hosts: all
   become: yes
 
-  roles:
-    - installation
-
   tasks:
     - name: Check Apache Process List
-      shell:
-        command: ps aux | grep httpd
-      register: apache_process_list
+      apt:
+        name: apache2-utils
+        state: present
+      when: "{{ ansible_distribution }}"
 
-    - debug:
-        var: apache_process_list.stdout_lines
+    - name: Restart Apache Server
+      service:
+        name: apache2
+        state: restarted
+      when: "{{ ansible_distribution }}"
+
+    - name: Verify Apache Process List
+      debug:
+        var: 'apache2 -n | head -1'
