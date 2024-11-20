@@ -1,28 +1,44 @@
 ---
-- name: ServiceNow Login Check and Troubleshoot
+- name: Reset ServiceNow User Password
   hosts: localhost
   gather_facts: no
   vars:
-    snow_instance_url: "https://your-instance.service-now.com"
-    snow_username: "your_username"
-    snow_password: "your_password"
+    snow_instance_url: "https://your_instance.service-now.com"
+    admin_username: "admin_user"
+    admin_password: "admin_pass"
+    target_user: "target_user_to_reset"
 
   tasks:
-    - name: Check if can login to ServiceNow
+    - name: Get Session Token
       uri:
-        url: "{{ snow_instance_url }}/api/now/table/incident?sysparm_limit=1"
+        url: "{{ snow_instance_url }}/api/now/table/sys_user?sysparm_query=user_name={{ admin_username }}&sysparm_limit=1"
         method: GET
-        user: "{{ snow_username }}"
-        password: "{{ snow_password }}"
-        force_basic_auth: yes
+        headers:
+          Accept: application/json
+        user: "{{ admin_username }}"
+        password: "{{ admin_password }}"
         validate_certs: no
-      register: snow_login_response
+      register: session_response
 
-    - name: Debug login response
+    - name: Extract User SysID
+      set_fact:
+        admin_sys_id: "{{ session_response.json.result[0].sys_id }}"
+
+    - name: Reset Password for Target User
+      uri:
+        url: "{{ snow_instance_url }}/api/now/table/sys_user/{{ target_user }}"
+        method: PATCH
+        headers:
+          Accept: application/json
+          Content-Type: application/json
+        body_format: json
+        body:
+          password_needs_reset: true
+        user: "{{ admin_username }}"
+        password: "{{ admin_password }}"
+        validate_certs: no
+      register: reset_response
+
+    - name: Debug Reset Response
       debug:
-        var: snow_login_response.status
-
-    - name: Fail if login fails
-      fail:
-        msg: "Failed to login to ServiceNow"
-      when: snow_login_response.status != 200
+        var: reset_response.json
