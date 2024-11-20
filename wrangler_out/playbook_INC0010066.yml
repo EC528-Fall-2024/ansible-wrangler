@@ -1,0 +1,9 @@
+---
+- name: Ensure Apache is running
+  hosts: webservers
+  become: yes
+  tasks:
+    - name: Start Apache service if it's stopped
+      service:
+        name: httpd
+        state: started
