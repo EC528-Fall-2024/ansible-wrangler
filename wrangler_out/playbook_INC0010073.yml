@@ -1,23 +1,15 @@
 ---
-- name: Example Playbook
+- name: Sample Playbook
   hosts: all
   become: yes
   tasks:
-    - name: Ensure a package is installed
-      apt:
-        name: vim
+    - name: Ensure Nginx is installed and running
+      ansible.builtin.yum:
+        name: nginx
         state: present
 
-    - name: Create a directory
-      file:
-        path: /opt/example_dir
-        state: directory
-        mode: '0755'
-
-    - name: Copy a file to the remote host
-      copy:
-        src: files/example.txt
-        dest: /opt/example_dir/example.txt
-        owner: root
-        group: root
-        mode: '0644'
+    - name: Start and enable Nginx service
+      ansible.builtin.service:
+        name: nginx
+        state: started
+        enabled: yes
