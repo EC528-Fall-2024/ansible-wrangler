@@ -1,15 +1,18 @@
 ---
-- name: Check Apache Status
+- name: Restart Apache Web Server
   hosts: all
   become: true
   tasks:
   - name: Check if Apache is running
+    command: ps aux | grep apache
+    register: result
+  - name: Stop Apache
     service:
-      name: apache2
+      name: httpd
+      state: stopped
+    when: not result.stdout.find("apache")
+  - name: Start Apache
+    service:
+      name: httpd
       state: started
-      enabled: yes
-    register: apache_status
-  
-  - name: Show Apache status
-    debug:
-      msg: "{{ apache_status }}"
+    when: result.stdout.find("apache") == -1
