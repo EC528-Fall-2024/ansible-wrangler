@@ -1,0 +1,30 @@
+---
+- name: Handle MySQL Database Server Crash
+  hosts: mysql_servers
+  become: yes
+  tasks:
+    - name: Restart MySQL Service
+      service:
+        name: mysqld
+        state: restarted
+
+    - name: Ensure MySQL Service is Running
+      service:
+        name: mysqld
+        state: started
+        enabled: yes
+
+    - name: Check MySQL Service Status
+      command: systemctl status mysqld
+      register: mysql_status
+      failed_when: "'active (running)' not in mysql_status.stdout"
+      changed_when: false
+
+    - name: Notify administrators if MySQL is still down
+      mail:
+        to: "admin@example.com"
+        subject: "MySQL Service Restart Failed on {{ inventory_hostname }}"
+        body: |
+          The MySQL service on {{ inventory_hostname }} failed to restart.
+          Please check the server logs for more details.
+      when: "'active (running)' not in mysql_status.stdout"
