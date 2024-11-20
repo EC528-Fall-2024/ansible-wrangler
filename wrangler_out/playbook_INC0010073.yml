@@ -1,30 +1,16 @@
 ---
-- name: Example Playbook
+- name: Update and install packages
   hosts: all
   become: yes
   tasks:
-    - name: Update and upgrade apt packages
+    - name: Update apt cache
       apt:
         update_cache: yes
-        upgrade: dist
 
-    - name: Install necessary packages
+    - name: Install required packages
       apt:
         name:
           - vim
           - curl
+          - git
         state: present
-
-    - name: Ensure a directory exists
-      file:
-        path: /opt/example_dir
-        state: directory
-        mode: '0755'
-
-    - name: Copy a file to the remote host
-      copy:
-        src: files/example_file.txt
-        dest: /opt/example_dir/example_file.txt
-        owner: root
-        group: root
-        mode: '0644'
