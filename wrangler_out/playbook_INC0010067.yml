@@ -1,44 +1,33 @@
 ---
-- name: Reset ServiceNow User Password
+- name: ServiceNow Login Troubleshooting Playbook
   hosts: localhost
   gather_facts: no
-  vars:
-    snow_instance_url: "https://your_instance.service-now.com"
-    admin_username: "admin_user"
-    admin_password: "admin_pass"
-    target_user: "target_user_to_reset"
-
   tasks:
-    - name: Get Session Token
+    - name: Check if ServiceNow URL is reachable
       uri:
-        url: "{{ snow_instance_url }}/api/now/table/sys_user?sysparm_query=user_name={{ admin_username }}&sysparm_limit=1"
+        url: "https://your_instance.service-now.com"
         method: GET
-        headers:
-          Accept: application/json
-        user: "{{ admin_username }}"
-        password: "{{ admin_password }}"
-        validate_certs: no
-      register: session_response
+        validate_certs: yes
+      register: service_now_response
 
-    - name: Extract User SysID
-      set_fact:
-        admin_sys_id: "{{ session_response.json.result[0].sys_id }}"
-
-    - name: Reset Password for Target User
-      uri:
-        url: "{{ snow_instance_url }}/api/now/table/sys_user/{{ target_user }}"
-        method: PATCH
-        headers:
-          Accept: application/json
-          Content-Type: application/json
-        body_format: json
-        body:
-          password_needs_reset: true
-        user: "{{ admin_username }}"
-        password: "{{ admin_password }}"
-        validate_certs: no
-      register: reset_response
-
-    - name: Debug Reset Response
+    - name: Debug the response from ServiceNow
       debug:
-        var: reset_response.json
+        var: service_now_response.status_code
+
+    - name: Ensure credentials are correct
+      uri:
+        url: "https://your_instance.service-now.com/api/now/table/incident"
+        method: GET
+        validate_certs: yes
+        user: "{{ sn_user }}"
+        password: "{{ sn_password }}"
+      register: incident_response
+
+    - name: Debug the response from ServiceNow API
+      debug:
+        var: incident_response.status_code
+
+    - name: Check if login is successful based on status code
+      fail:
+        msg: "Login failed. Please check your credentials."
+      when: incident_response.status_code != 200
