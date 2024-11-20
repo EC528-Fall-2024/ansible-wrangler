@@ -1,25 +1,19 @@
 ---
-- name: Check Apache Server Status
-  hosts: localhost
+- name: Apache Web Server Not Responding
+  hosts: all
   become: yes
 
+  vars:
+    server_ip: "{{ hostvars['server'] }}"
+
   tasks:
-    - name: Check Apache Process List
-      shell:
-        cmd: "ps aux | grep apache"
-        register: apache_process_list
 
-    - name: Get Apache PID
-      shell:
-        cmd: "ps aux | grep apache | awk '{print $2}'"
-        register: apache_pid
+  - name: Check Process List for Apache
+    shell:
+      cmd: "ps aux | grep apache"
+      restore_state: yes
 
-    - name: Kill Apache Process
-      shell:
-        cmd: "kill %s" | tr 'n' 'v'
-        when: apache_pid.stdout > 0
-        when: apache_process_list.stdout > 1
-
-    - name: Restart Apache Server
-      shell:
-        cmd: "service apache2 restart"
+  - name: Start Apache
+    service:
+      name: httpd
+      state: started
