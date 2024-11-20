@@ -1,40 +1,13 @@
 ---
-- name: Apache Server Not Responding
+- name: Verify Apache Status
   hosts: all
   become: yes
 
   tasks:
-  - name: Check process list for 'apache'
-    shell:
-      command: "ps -ef | grep apache"
-    register: apache_process
-
-  - name: Get PID of running service
-    debug:
-      msg: "PID is {{ apache_process.stdout[0].pid }}"
-
-  - name: Stop the Apache Service if it's running
-    service:
-      name: apache
-      state: stopped
-
-  - name: Restart the Apache Service
-    service:
-      name: apache
-      enabled: yes
-      state: restarted
-
-  - name: Get status of Apache process
-    shell:
-      command: "ps -ef | grep apache"
+  - name: Check Process List
+    command: ps aux | grep "apache"
+  - name: Verify Server Status
+    uri: https://example.com
     register: apache_status
-
-  - name: Check if Apache is running and responding
-    debug:
-      msg: "Apache response is {{ apache_status.stdout[0].status }}"
-
-  handlers:
-  - name: restartapache
-    service:
-      name: apache
-      state: restarted
+    http_code:
+      status_code: 200
