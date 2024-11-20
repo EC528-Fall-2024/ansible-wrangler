@@ -1,17 +1,12 @@
 ---
-- name: Restart Apache Web Server
+- name: Check if Apache is running
   hosts: all
   become: true
-
   tasks:
-  - name: Stop Apache service
-    service:
-      name: httpd
-      state: stopped
-      enabled: no
-
-  - name: Start Apache service
-    service:
-      name: httpd
-      state: started
-      enabled: yes
+  - name: Check for apache process
+    command: ps aux | grep apache
+    register: output
+  - name: Report if apache is not running
+    fail:
+      msg: "Apache is not running"
+    when: output.stdout == ''
