@@ -1,31 +1,20 @@
 ---
-- name: Check Apache Web Server
+- name: Apache Web Server Not Responding
   hosts: localhost
   become: yes
 
-  roles:
-    - ansible-role-apache-check
+  vars:
+    httpd_config_file: /etc/httpd/conf.dapache.conf
 
   tasks:
-  - name: Get Process List
-    uri:
-      url: http://localhost:8080/health_check
-      method: GET
-      status_code: 200
-      content_type: application/json
+  - name: Update Apache configuration file
+    template:
+      src: "{{ httpd_config_file }}"
+      dest: /usr/local/apache2/conf/httpd.conf
+      mode: '0644'
+    notify: restart httpd
 
-  - name: Parse JSON
-    json:
-      level: debug
-      source: "{{ lookup('uri', 'http://localhost:8080/health_check') | json }}"
-
-  - name: Check Apache Status
-    uri:
-      url: http://localhost:8080/status
-      method: GET
-      status_code: 200
-      content_type: application/json
-
-  - name: Print Results
-    debug:
-      msg: "{{ lookup('uri', 'http://localhost:8080/health_check') | json }} and {{ lookup('uri', 'http://localhost:8080/status') | json }}"
+  - name: Restart Apache server
+    service:
+      name: httpd
+      state: started
