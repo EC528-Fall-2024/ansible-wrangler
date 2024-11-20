@@ -1,11 +1,17 @@
 ---
-- name: Check if Apache is running
+- name: Restart Apache
   hosts: all
+  become: true
   tasks:
-    - name: Check for Apache processes
-      shell: ps aux | grep apache
-      register: output
-    - debug:
-        msg: "{{ output.stdout }}"
-    - name: Restart Apache
-      service: name=apache state=restarted
+    - name: Check if Apache is running
+      service: name=apache state=started enabled=yes
+      register: apache_service
+    
+    - name: Check if Apache process exists
+      shell: "pgrep -f apache"
+      ignore_errors: true
+      register: apache_process
+      
+    - name: Restart Apache service
+      service: name=apache state=restarted enabled=yes
+      when: apache_service.status == 'started' and not apache_process.stdout
