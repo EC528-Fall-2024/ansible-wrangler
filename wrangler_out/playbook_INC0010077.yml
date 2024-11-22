@@ -1,15 +1,31 @@
 ---
-- name: Check ServiceNow Accessibility
+- name: Ensure ServiceNow access is resolved
   hosts: localhost
   gather_facts: no
   tasks:
-    - name: Ensure ServiceNow is accessible
+    - name: Check network connectivity to ServiceNow
       uri:
-        url: https://<your_instance>.service-now.com/
+        url: https://your-servicenow-instance.service-now.com
         validate_certs: yes
-        status_code: 200
       register: response
 
-    - name: Debug ServiceNow response
+    - name: Debug the response status code
       debug:
-        var: response.status
+        msg: "Response Status Code: {{ response.status_code }}"
+
+    - name: Ensure valid HTTP status code
+      assert:
+        that:
+          - response.status_code == 200
+        fail_msg: "Failed to access ServiceNow. Check network and credentials."
+        success_msg: "Successfully connected to ServiceNow."
+
+    - name: Update DNS cache if needed
+      command: sudo systemctl restart NetworkManager
+
+    - name: Clear browser cookies and cache
+      shell: >
+        rm -rf ~/.cache/mozilla/firefox/*.default-release/{cookies.sqlite,cache2}
+
+    - name: Restart web browser
+      shell: killall firefox && firefox https://your-servicenow-instance.service-now.com &
