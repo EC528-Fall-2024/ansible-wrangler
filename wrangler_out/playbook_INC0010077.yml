@@ -1,48 +1,39 @@
 ---
-- name: ServiceNow Login Troubleshooting Playbook
+- name: Troubleshoot ServiceNow Login Issues
   hosts: localhost
-  gather_facts: no
-
   tasks:
-    - name: Check if ServiceNow URL is accessible
-      uri:
-        url: "https://your-servicenow-instance.service-now.com"
-        validate_certs: yes
-        status_code: 200
-      register: response
-      ignore_errors: true
-
-    - name: Debug response from ServiceNow
-      debug:
-        var: response.status
-
-    - name: Ensure DNS resolution is working
-      shell: nslookup your-servicenow-instance.service-now.com
+    - name: Check DNS resolution for servicenow instance
+      command: nslookup your-servicenow-instance.service-now.com
       register: dns_check
-      ignore_errors: true
+      changed_when: false
 
-    - name: Debug DNS check output
+    - name: Debug DNS resolution output
       debug:
         var: dns_check.stdout_lines
 
-    - name: Check if network connectivity to ServiceNow is established
-      wait_for_connection:
-        host: your-servicenow-instance.service-now.com
-        timeout: 30
-      ignore_errors: true
+    - name: Check connectivity to ServiceNow instance on port 443
+      command: curl -kI https://your-servicenow-instance.service-now.com | head -n 1
+      register: connectivity_check
+      changed_when: false
 
-    - name: Display network connectivity status
+    - name: Debug connectivity output
       debug:
-        msg: "Network connectivity check completed with status {{ ansible_facts.network_interfaces.eth0.ipv4.address }}"
+        var: connectivity_check.stdout_lines
 
-    - name: Ensure browser is up-to-date
-      command: "{{ item }}"
-      loop:
-        - google-chrome --version
-        - firefox --version
-      register: browser_version
-      ignore_errors: true
+    - name: Check if firewall rules are blocking access
+      command: sudo iptables -L
+      register: firewall_rules
+      changed_when: false
 
-    - name: Debug browser versions
+    - name: Debug firewall rules
       debug:
-        var: browser_version.results
+        var: firewall_rules.stdout_lines
+
+    - name: Check system date and time
+      command: date
+      register: date_time_check
+      changed_when: false
+
+    - name: Debug system date and time
+      debug:
+        var: date_time_check.stdout_lines
