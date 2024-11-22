@@ -1,9 +1,7 @@
 ---
-- name: Restart Visual Studio Code on MacBook
+- name: Restart Visual Studio Code on macOS
   hosts: localhost
+  become: no
   tasks:
-    - name: Stop Visual Studio Code process
-      ansible.builtin.command: pkill -f "Visual Studio Code"
-
-    - name: Start Visual Studio Code
-      ansible.builtin.command: open /Applications/Visual\ Studio\ Code.app
+    - name: Kill all VSCode processes
+      command: pkill -f "Visual Studio Code"
