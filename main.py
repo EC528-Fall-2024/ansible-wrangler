@@ -72,6 +72,7 @@ def awx(incident_number, playbook):
 response = requests.get(url, headers=headers, auth=HTTPBasicAuth(username, password))
 if response.status_code == 200:
     data = response.json()
+
     if len(data['result']) > 0:
         caller_sys_id = data['result'][0]['sys_id']
         print("Caller sys_id:", caller_sys_id)
