@@ -1,28 +1,15 @@
 ---
-- name: Reset ServiceNow User Password
+- name: Check ServiceNow Accessibility
   hosts: localhost
-  gather_facts: no
   tasks:
-    - name: Fetch current password from vault or variable
-      set_fact:
-        service_now_password: "{{ lookup('ansible.builtin.env', 'SERVICE_NOW_PASSWORD') | default(lookup('community.general.vault', 'path/to/vault.yml/service_now_password')) }}"
-
-    - name: Update ServiceNow user password
+    - name: Ensure ServiceNow is accessible
       uri:
-        url: "https://your-instance.service-now.com/api/now/table/sys_user"
-        method: PUT
-        headers:
-          Accept: application/json
-          Content-Type: application/json
-        body_format: json
-        body:
-          username: "{{ service_now_username }}"
-          password: "{{ new_service_now_password }}"
-        user: "{{ service_now_admin_username }}"
-        password: "{{ service_now_admin_password }}"
+        url: "https://your-servicenow-instance.service-now.com"
+        method: GET
         validate_certs: yes
         status_code: 200
+      register: response
 
-    - name: Notify of password update
+    - name: Display response status
       debug:
-        msg: "Password for {{ service_now_username }} has been updated successfully."
+        var: response.status
