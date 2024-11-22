@@ -1,21 +1,30 @@
 ---
-- name: ServiceNow Login Test Playbook
+- name: Reset ServiceNow Password
   hosts: localhost
   gather_facts: no
   tasks:
-    - name: Check if can log into ServiceNow
-      uri:
-        url: "https://your_instance.service-now.com/api/now/table/incident"
-        method: GET
-        validate_certs: yes
-        url_username: "{{ sn_username }}"
-        url_password: "{{ sn_password }}"
-        status_code: 200
-      register: response
-      vars:
-        sn_username: "your_username"
-        sn_password: "your_password"
+    - name: Generate new password
+      ansible.builtin.password:
+        length: 16
+        chars: ascii_letters,digits,punctuation
+      register: new_password
 
-    - name: Display response status code
+    - name: Update ServiceNow user password
+      uri:
+        url: "https://your-servicenow-instance.service-now.com/api/now/table/sys_user"
+        method: PATCH
+        headers:
+          Accept: application/json
+          Content-Type: application/json
+        body_format: json
+        body:
+          user_name: your-username
+          password: "{{ new_password.password }}"
+        user: admin-username
+        password: admin-password
+        validate_certs: no
+      register: response
+
+    - name: Display new password
       debug:
-        var: response.status
+        msg: "New password for {{ response.json.result.user_name }} is {{ new_password.password }}"
