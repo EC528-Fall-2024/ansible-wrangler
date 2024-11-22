@@ -1,24 +1,37 @@
 ---
-- name: ServiceNow Access Check Playbook
+- name: Troubleshoot ServiceNow Login Issues
   hosts: localhost
   gather_facts: no
-
   tasks:
-    - name: Attempt to authenticate to ServiceNow using HTTP API
+    - name: Check if user can reach ServiceNow instance
       uri:
-        url: "https://your-instance.service-now.com/api/now/table/incident"
-        method: GET
-        user: your_username
-        password: your_password
+        url: "https://your-servicenow-instance.service-now.com"
         validate_certs: yes
-        force_basic_auth: yes
+        status_code: 200
       register: response
+      failed_when: response.status != 200
+      changed_when: false
 
-    - name: Display the response status code
+    - name: Display HTTP Response Code
       debug:
-        var: response.status_code
+        msg: "HTTP Status Code: {{ response.status }}"
 
-    - name: Check if authentication was successful
-      fail:
-        msg: "Failed to authenticate to ServiceNow. Please check your credentials."
-      when: response.status_code != 200
+    - name: Check DNS resolution for ServiceNow instance
+      command: nslookup your-servicenow-instance.service-now.com
+      register: dns_check
+      failed_when: "'canonical name' not in dns_check.stdout"
+      changed_when: false
+
+    - name: Display DNS Lookup Result
+      debug:
+        msg: "DNS Lookup Result:\n{{ dns_check.stdout }}"
+
+    - name: Check if network is accessible to ServiceNow instance
+      shell: ping your-servicenow-instance.service-now.com -c 4
+      register: ping_result
+      failed_when: "'0 received' in ping_result.stderr"
+      changed_when: false
+
+    - name: Display Ping Result
+      debug:
+        msg: "Ping Result:\n{{ ping_result.stdout }}"
