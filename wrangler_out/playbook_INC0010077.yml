@@ -1,0 +1,29 @@
+---
+- name: Reset ServiceNow Credentials
+  hosts: localhost
+  gather_facts: no
+  tasks:
+    - name: Generate new password
+      community.general.password:
+        length: 16
+        chars: ascii_letters,digits,punctuation
+      register: new_password
+
+    - name: Update user password in ServiceNow using REST API
+      uri:
+        url: "https://your-servicenow-instance.service-now.com/api/now/table/sys_user/{{ user_id }}"
+        method: PUT
+        headers:
+          Content-Type: application/json
+          Accept: application/json
+        body_format: json
+        body:
+          password: "{{ new_password.password }}"
+        validate_certs: no
+        url_username: "admin_username"
+        url_password: "admin_password"
+      register: update_response
+
+    - name: Display the new password
+      debug:
+        var: new_password.password
