@@ -3,13 +3,5 @@
   hosts: localhost
   become: no
   tasks:
-    - name: Force quit Visual Studio Code
-      command: osascript -e 'tell application "Visual Studio Code" to quit'
-      ignore_errors: yes
-
-    - name: Delay for a few seconds
-      pause:
-        seconds: 5
-
-    - name: Launch Visual Studio Code
-      command: open -a "Visual Studio Code"
+    - name: Kill all instances of Visual Studio Code
+      ansible.builtin.command: pkill -f "Visual Studio Code"
