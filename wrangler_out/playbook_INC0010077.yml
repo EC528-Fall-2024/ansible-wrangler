@@ -1,17 +1,28 @@
 ---
-- name: ServiceNow Login Test
+- name: Reset ServiceNow User Password
   hosts: localhost
   gather_facts: no
   tasks:
-    - name: Check if able to login to ServiceNow
-      uri:
-        url: "https://your_instance.service-now.com/api/now/table/sys_user"
-        method: GET
-        user: your_username
-        password: your_password
-        validate_certs: yes
-      register: service_now_response
+    - name: Fetch current password from vault or variable
+      set_fact:
+        service_now_password: "{{ lookup('ansible.builtin.env', 'SERVICE_NOW_PASSWORD') | default(lookup('community.general.vault', 'path/to/vault.yml/service_now_password')) }}"
 
-    - name: Debug response from ServiceNow
+    - name: Update ServiceNow user password
+      uri:
+        url: "https://your-instance.service-now.com/api/now/table/sys_user"
+        method: PUT
+        headers:
+          Accept: application/json
+          Content-Type: application/json
+        body_format: json
+        body:
+          username: "{{ service_now_username }}"
+          password: "{{ new_service_now_password }}"
+        user: "{{ service_now_admin_username }}"
+        password: "{{ service_now_admin_password }}"
+        validate_certs: yes
+        status_code: 200
+
+    - name: Notify of password update
       debug:
-        var: service_now_response.status
+        msg: "Password for {{ service_now_username }} has been updated successfully."
