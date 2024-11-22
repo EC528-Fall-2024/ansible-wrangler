@@ -1,13 +1,6 @@
 ---
-- name: Restart VSCode on MacBook
+- name: Force quit Visual Studio Code on macOS
   hosts: localhost
   tasks:
-    - name: Kill VSCode processes
+    - name: Kill all instances of Visual Studio Code
       command: pkill -f "Visual Studio Code"
-
-    - name: Wait for a few seconds before restarting
-      pause:
-        seconds: 5
-
-    - name: Start VSCode again
-      command: open /Applications/Visual\ Studio\ Code.app
