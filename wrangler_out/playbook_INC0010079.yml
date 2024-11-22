@@ -1,0 +1,10 @@
+---
+- name: Ensure Apache2 is running on the specified host
+  hosts: 199.94.60.165
+  become: yes
+  tasks:
+    - name: Start and enable Apache2 service
+      service:
+        name: apache2
+        state: started
+        enabled: yes
