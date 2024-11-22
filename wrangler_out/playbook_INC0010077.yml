@@ -1,32 +1,45 @@
 ---
-- name: Troubleshoot ServiceNow Login Issue
+- name: Reset ServiceNow Password
   hosts: localhost
   gather_facts: no
   tasks:
-    - name: Check network connectivity to ServiceNow instance
+    - name: Prompt user for ServiceNow instance URL
+      prompt: "Enter your ServiceNow instance URL (e.g., https://yourinstance.service-now.com)"
+      register: sn_instance_url
+
+    - name: Prompt user for username
+      prompt: "Enter your ServiceNow username"
+      register: sn_username
+
+    - name: Prompt user for email address associated with the account
+      prompt: "Enter the email address associated with your ServiceNow account"
+      register: sn_email
+
+    - name: Send password reset request to ServiceNow
       uri:
-        url: https://your-servicenow-instance.service-now.com
+        url: "{{ sn_instance_url.stdout }}/api/now/table/sys_user?sysparm_query=user_name={{ sn_username.stdout }}&sysparm_fields=email"
         method: GET
-        validate_certs: yes
-      register: response
-      ignore_errors: yes
+        validate_certs: no
+        return_content: yes
+      register: user_info
 
-    - name: Display HTTP status code and message
+    - name: Check if user exists and email matches
+      fail:
+        msg: "User not found or email does not match."
+      when: "'result' not in user_info.content or user_info.json.result[0].email != sn_email.stdout"
+
+    - name: Generate password reset link
+      uri:
+        url: "{{ sn_instance_url.stdout }}/api/now/table/sys_password_reset"
+        method: POST
+        validate_certs: no
+        body_format: json
+        body:
+          table_name: "sys_user"
+          sys_id: "{{ user_info.json.result[0].sys_id }}"
+          email: "{{ sn_email.stdout }}"
+      register: reset_response
+
+    - name: Display password reset response
       debug:
-        msg: "HTTP Status Code: {{ response.status }} - Message: {{ response.msg }}"
-
-    - name: Check DNS resolution for ServiceNow instance
-      shell: nslookup your-servicenow-instance.service-now.com
-      register: dns_check
-
-    - name: Display DNS lookup results
-      debug:
-        msg: "{{ dns_check.stdout_lines }}"
-
-    - name: Check if credentials are correct
-      pause:
-        prompt: "Please verify the username and password. Press Enter to continue."
-
-    - name: Check browser compatibility and clear cache
-      pause:
-        prompt: "Check your browser settings, ensure cookies and JavaScript are enabled, and try clearing your cache. Press Enter to continue."
+        msg: "Password reset request sent. Please check your email for further instructions."
