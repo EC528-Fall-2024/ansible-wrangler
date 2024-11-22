@@ -1,45 +1,19 @@
 ---
-- name: Reset ServiceNow Password
+- name: ServiceNow Login Check
   hosts: localhost
   gather_facts: no
   tasks:
-    - name: Prompt user for ServiceNow instance URL
-      prompt: "Enter your ServiceNow instance URL (e.g., https://yourinstance.service-now.com)"
-      register: sn_instance_url
-
-    - name: Prompt user for username
-      prompt: "Enter your ServiceNow username"
-      register: sn_username
-
-    - name: Prompt user for email address associated with the account
-      prompt: "Enter the email address associated with your ServiceNow account"
-      register: sn_email
-
-    - name: Send password reset request to ServiceNow
+    - name: Check ServiceNow login
       uri:
-        url: "{{ sn_instance_url.stdout }}/api/now/table/sys_user?sysparm_query=user_name={{ sn_username.stdout }}&sysparm_fields=email"
+        url: "https://your_instance.service-now.com/api/now/table/sys_user"
         method: GET
+        headers:
+          Accept: application/json
+        user: your_username
+        password: your_password
         validate_certs: no
-        return_content: yes
-      register: user_info
+      register: response
 
-    - name: Check if user exists and email matches
-      fail:
-        msg: "User not found or email does not match."
-      when: "'result' not in user_info.content or user_info.json.result[0].email != sn_email.stdout"
-
-    - name: Generate password reset link
-      uri:
-        url: "{{ sn_instance_url.stdout }}/api/now/table/sys_password_reset"
-        method: POST
-        validate_certs: no
-        body_format: json
-        body:
-          table_name: "sys_user"
-          sys_id: "{{ user_info.json.result[0].sys_id }}"
-          email: "{{ sn_email.stdout }}"
-      register: reset_response
-
-    - name: Display password reset response
+    - name: Debug response
       debug:
-        msg: "Password reset request sent. Please check your email for further instructions."
+        var: response.status
