@@ -1,37 +1,32 @@
 ---
-- name: Troubleshoot ServiceNow Login Issues
+- name: Troubleshoot ServiceNow Login Issue
   hosts: localhost
   gather_facts: no
   tasks:
-    - name: Check if user can reach ServiceNow instance
+    - name: Check network connectivity to ServiceNow instance
       uri:
-        url: "https://your-servicenow-instance.service-now.com"
+        url: https://your-servicenow-instance.service-now.com
+        method: GET
         validate_certs: yes
-        status_code: 200
       register: response
-      failed_when: response.status != 200
-      changed_when: false
+      ignore_errors: yes
 
-    - name: Display HTTP Response Code
+    - name: Display HTTP status code and message
       debug:
-        msg: "HTTP Status Code: {{ response.status }}"
+        msg: "HTTP Status Code: {{ response.status }} - Message: {{ response.msg }}"
 
     - name: Check DNS resolution for ServiceNow instance
-      command: nslookup your-servicenow-instance.service-now.com
+      shell: nslookup your-servicenow-instance.service-now.com
       register: dns_check
-      failed_when: "'canonical name' not in dns_check.stdout"
-      changed_when: false
 
-    - name: Display DNS Lookup Result
+    - name: Display DNS lookup results
       debug:
-        msg: "DNS Lookup Result:\n{{ dns_check.stdout }}"
+        msg: "{{ dns_check.stdout_lines }}"
 
-    - name: Check if network is accessible to ServiceNow instance
-      shell: ping your-servicenow-instance.service-now.com -c 4
-      register: ping_result
-      failed_when: "'0 received' in ping_result.stderr"
-      changed_when: false
+    - name: Check if credentials are correct
+      pause:
+        prompt: "Please verify the username and password. Press Enter to continue."
 
-    - name: Display Ping Result
-      debug:
-        msg: "Ping Result:\n{{ ping_result.stdout }}"
+    - name: Check browser compatibility and clear cache
+      pause:
+        prompt: "Check your browser settings, ensure cookies and JavaScript are enabled, and try clearing your cache. Press Enter to continue."
