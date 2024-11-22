@@ -1,9 +1,11 @@
 ---
-- name: Restart Visual Studio Code on macOS
+- name: Restart VSCode on MacBook
   hosts: localhost
   tasks:
-    - name: Force quit Visual Studio Code
-      command: osascript -e 'quit app "Visual Studio Code"'
+    - name: Ensure VSCode is closed
+      shell: |
+        osascript -e 'quit app "Visual Studio Code"'
+      ignore_errors: yes
 
-    - name: Launch Visual Studio Code
-      command: open -a "Visual Studio Code"
+    - name: Start VSCode again
+      shell: open -a "Visual Studio Code"
