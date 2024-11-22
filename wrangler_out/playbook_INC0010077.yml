@@ -1,40 +1,15 @@
 ---
-- name: Reset ServiceNow Password
+- name: Check ServiceNow Accessibility
   hosts: localhost
   gather_facts: no
-  vars:
-    servicenow_instance_url: "https://your-instance.service-now.com"
-    admin_username: "admin"
-    admin_password: "your_admin_password"
-    target_user: "target_user_name"
-
   tasks:
-    - name: Get Session Token
+    - name: Ensure ServiceNow is accessible
       uri:
-        url: "{{ servicenow_instance_url }}/api/now/table/sys_user?sysparm_query=name={{ target_user }}&sysparm_fields=sys_id"
-        method: GET
-        user: "{{ admin_username }}"
-        password: "{{ admin_password }}"
-        validate_certs: no
-        return_content: yes
-      register: user_info
+        url: https://<your_instance>.service-now.com/
+        validate_certs: yes
+        status_code: 200
+      register: response
 
-    - name: Parse User Sys ID
-      set_fact:
-        user_sys_id: "{{ user_info.json.result[0].sys_id }}"
-
-    - name: Reset Password for Target User
-      uri:
-        url: "{{ servicenow_instance_url }}/api/now/table/sys_user/{{ user_sys_id }}"
-        method: PATCH
-        body:
-          password: "NewStrongPassword123!"
-        body_format: json
-        user: "{{ admin_username }}"
-        password: "{{ admin_password }}"
-        validate_certs: no
-      register: reset_result
-
-    - name: Display Result
+    - name: Debug ServiceNow response
       debug:
-        var: reset_result.status
+        var: response.status
