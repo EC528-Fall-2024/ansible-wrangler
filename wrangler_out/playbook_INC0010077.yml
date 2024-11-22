@@ -1,32 +1,18 @@
 ---
-- name: Reset ServiceNow Password
+- name: ServiceNow Login Check
   hosts: localhost
   gather_facts: no
   tasks:
-    - name: Retrieve current instance information
+    - name: Attempt to login to ServiceNow
       uri:
-        url: "https://your_instance.service-now.com/api/now/table/sys_user?sysparm_query=user_name={{ username }}"
+        url: "https://your_instance.service-now.com/api/now/table/sys_user"
         method: GET
-        headers:
-          Accept: application/json
-          Authorization: 'Basic {{ b64encode(service_now_username + ":" + service_now_password) }}'
-        validate_certs: false
-      register: user_info
+        user: your_username
+        password: your_password
+        validate_certs: yes
+        status_code: 200
+      register: service_now_login
 
-    - name: Reset user password
-      uri:
-        url: "https://your_instance.service-now.com/api/now/table/sys_user/{{ user_info.json.result[0].sys_id }}/password_reset"
-        method: PUT
-        body_format: json
-        body:
-          new_password: "{{ new_password }}"
-        headers:
-          Accept: application/json
-          Authorization: 'Basic {{ b64encode(service_now_username + ":" + service_now_password) }}'
-        validate_certs: false
-      when: user_info.json.result | length > 0
-
-    - name: Notify if user not found
+    - name: Display login result
       debug:
-        msg: "User not found in ServiceNow"
-      when: user_info.json.result | length == 0
+        var: service_now_login.status
