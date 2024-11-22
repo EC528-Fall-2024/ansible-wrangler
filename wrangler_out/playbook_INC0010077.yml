@@ -1,19 +1,21 @@
 ---
-- name: ServiceNow Login Check
+- name: ServiceNow Login Test Playbook
   hosts: localhost
   gather_facts: no
   tasks:
-    - name: Check ServiceNow login
+    - name: Check if can log into ServiceNow
       uri:
-        url: "https://your_instance.service-now.com/api/now/table/sys_user"
+        url: "https://your_instance.service-now.com/api/now/table/incident"
         method: GET
-        headers:
-          Accept: application/json
-        user: your_username
-        password: your_password
-        validate_certs: no
+        validate_certs: yes
+        url_username: "{{ sn_username }}"
+        url_password: "{{ sn_password }}"
+        status_code: 200
       register: response
+      vars:
+        sn_username: "your_username"
+        sn_password: "your_password"
 
-    - name: Debug response
+    - name: Display response status code
       debug:
         var: response.status
