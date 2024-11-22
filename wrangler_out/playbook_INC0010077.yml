@@ -1,39 +1,24 @@
 ---
-- name: Troubleshoot ServiceNow Login Issues
+- name: ServiceNow Login Check
   hosts: localhost
+  gather_facts: no
   tasks:
-    - name: Check DNS resolution for servicenow instance
-      command: nslookup your-servicenow-instance.service-now.com
-      register: dns_check
-      changed_when: false
+    - name: Attempt to login to ServiceNow
+      uri:
+        url: "https://your-instance.service-now.com/api/now/table/sys_user?sysparm_limit=1"
+        method: GET
+        validate_certs: yes
+        user: your_username
+        password: your_password
+        force_basic_auth: yes
+      register: response
 
-    - name: Debug DNS resolution output
+    - name: Check if login was successful
       debug:
-        var: dns_check.stdout_lines
+        msg: "Login Successful"
+      when: response.status == 200
 
-    - name: Check connectivity to ServiceNow instance on port 443
-      command: curl -kI https://your-servicenow-instance.service-now.com | head -n 1
-      register: connectivity_check
-      changed_when: false
-
-    - name: Debug connectivity output
+    - name: Display error message if login failed
       debug:
-        var: connectivity_check.stdout_lines
-
-    - name: Check if firewall rules are blocking access
-      command: sudo iptables -L
-      register: firewall_rules
-      changed_when: false
-
-    - name: Debug firewall rules
-      debug:
-        var: firewall_rules.stdout_lines
-
-    - name: Check system date and time
-      command: date
-      register: date_time_check
-      changed_when: false
-
-    - name: Debug system date and time
-      debug:
-        var: date_time_check.stdout_lines
+        msg: "Login Failed with Status Code {{ response.status }}"
+      when: response.status != 200
