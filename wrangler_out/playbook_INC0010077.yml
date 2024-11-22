@@ -1,24 +1,35 @@
 ---
-- name: ServiceNow Login Task
+- name: Reset ServiceNow Password
   hosts: localhost
   gather_facts: no
+  vars:
+    sn_instance: "your_instance.service-now.com"
+    admin_user: "admin_username"
+    admin_password: "admin_password"
+    target_user: "target_username"
+
   tasks:
-    - name: Check if credentials are valid by logging into ServiceNow
+    - name: Retrieve the sys_id of the target user
       uri:
-        url: "https://your-instance.service-now.com/api/now/table/incident"
+        url: "https://{{ sn_instance }}/api/now/table/sys_user?sysparm_query=user_name={{ target_user }}&sysparm_fields=sys_id"
         method: GET
-        user: "{{ service_now_username }}"
-        password: "{{ service_now_password }}"
         validate_certs: no
-        status_code: 200
-      register: response
+        headers:
+          Accept: "application/json"
+        url_username: "{{ admin_user }}"
+        url_password: "{{ admin_password }}"
+      register: user_info
 
-    - name: Display login result
-      debug:
-        msg: "Login successful"
-      when: response.status == 200
-
-    - name: Fail if login is unsuccessful
-      fail:
-        msg: "Failed to log into ServiceNow. Please check your credentials."
-      when: response.status != 200
+    - name: Reset the password for the target user
+      uri:
+        url: "https://{{ sn_instance }}/api/now/table/sys_user/{{ user_info.json.result[0].sys_id }}"
+        method: PATCH
+        validate_certs: no
+        body_format: json
+        body:
+          initialize_password: true
+        headers:
+          Accept: "application/json"
+        url_username: "{{ admin_user }}"
+        url_password: "{{ admin_password }}"
+      when: user_info.status == 200 and user_info.json.result | length > 0
