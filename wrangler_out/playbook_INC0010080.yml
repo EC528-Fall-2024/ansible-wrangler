@@ -1,0 +1,15 @@
+---
+- name: Restart VSCode on macOS
+  hosts: localhost
+  gather_facts: no
+  tasks:
+    - name: Force quit VSCode
+      ansible.builtin.shell: |
+        osascript -e 'quit app "Visual Studio Code"'
+      args:
+        warn: false
+
+    - name: Launch VSCode again
+      ansible.builtin.homebrew_cask:
+        name: visual-studio-code
+        state: present
