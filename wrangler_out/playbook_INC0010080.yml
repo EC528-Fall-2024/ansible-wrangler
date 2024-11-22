@@ -1,10 +1,10 @@
 ---
-- name: Restart Visual Studio Code
+- name: Restart VSCode on MacBook
   hosts: localhost
   tasks:
-    - name: Ensure Visual Studio Code is closed
-      command: pkill "Code"
+    - name: Kill all instances of VSCode
+      command: pkill -f "Visual Studio Code"
       ignore_errors: yes
 
-    - name: Launch Visual Studio Code
-      command: open -a "Visual Studio Code"
+    - name: Launch VSCode again
+      shell: open -a "Visual Studio Code"
