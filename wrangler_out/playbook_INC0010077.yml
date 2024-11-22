@@ -1,35 +1,30 @@
 ---
-- name: Reset ServiceNow Password
+- name: Reset ServiceNow User Password
   hosts: localhost
   gather_facts: no
-  vars:
-    sn_instance: "your_instance.service-now.com"
-    admin_user: "admin_username"
-    admin_password: "admin_password"
-    target_user: "target_username"
-
   tasks:
-    - name: Retrieve the sys_id of the target user
-      uri:
-        url: "https://{{ sn_instance }}/api/now/table/sys_user?sysparm_query=user_name={{ target_user }}&sysparm_fields=sys_id"
-        method: GET
-        validate_certs: no
-        headers:
-          Accept: "application/json"
-        url_username: "{{ admin_user }}"
-        url_password: "{{ admin_password }}"
-      register: user_info
+    - name: Generate new random password
+      ansible.builtin.password:
+        length: 16
+        chars: ascii_letters,digits,punctuation
+      register: new_password
 
-    - name: Reset the password for the target user
+    - name: Set new password for ServiceNow user
       uri:
-        url: "https://{{ sn_instance }}/api/now/table/sys_user/{{ user_info.json.result[0].sys_id }}"
+        url: "https://your-servicenow-instance.service-now.com/api/now/table/sys_user"
         method: PATCH
+        headers:
+          Accept: application/json
+          Content-Type: application/json
+        user: your_username
+        password: your_password
         validate_certs: no
         body_format: json
         body:
-          initialize_password: true
-        headers:
-          Accept: "application/json"
-        url_username: "{{ admin_user }}"
-        url_password: "{{ admin_password }}"
-      when: user_info.status == 200 and user_info.json.result | length > 0
+          sys_id: target_user_sys_id
+          user_password: "{{ new_password.password }}"
+      register: reset_response
+
+    - name: Display the new password (for testing purposes, remove in production)
+      debug:
+        var: new_password.password
