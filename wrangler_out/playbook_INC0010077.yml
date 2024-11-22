@@ -1,30 +1,40 @@
 ---
-- name: Reset ServiceNow User Password
+- name: Reset ServiceNow Password
   hosts: localhost
   gather_facts: no
+  vars:
+    servicenow_instance_url: "https://your-instance.service-now.com"
+    admin_username: "admin"
+    admin_password: "your_admin_password"
+    target_user: "target_user_name"
+
   tasks:
-    - name: Generate new random password
-      ansible.builtin.password:
-        length: 16
-        chars: ascii_letters,digits,punctuation
-      register: new_password
-
-    - name: Set new password for ServiceNow user
+    - name: Get Session Token
       uri:
-        url: "https://your-servicenow-instance.service-now.com/api/now/table/sys_user"
-        method: PATCH
-        headers:
-          Accept: application/json
-          Content-Type: application/json
-        user: your_username
-        password: your_password
+        url: "{{ servicenow_instance_url }}/api/now/table/sys_user?sysparm_query=name={{ target_user }}&sysparm_fields=sys_id"
+        method: GET
+        user: "{{ admin_username }}"
+        password: "{{ admin_password }}"
         validate_certs: no
-        body_format: json
-        body:
-          sys_id: target_user_sys_id
-          user_password: "{{ new_password.password }}"
-      register: reset_response
+        return_content: yes
+      register: user_info
 
-    - name: Display the new password (for testing purposes, remove in production)
+    - name: Parse User Sys ID
+      set_fact:
+        user_sys_id: "{{ user_info.json.result[0].sys_id }}"
+
+    - name: Reset Password for Target User
+      uri:
+        url: "{{ servicenow_instance_url }}/api/now/table/sys_user/{{ user_sys_id }}"
+        method: PATCH
+        body:
+          password: "NewStrongPassword123!"
+        body_format: json
+        user: "{{ admin_username }}"
+        password: "{{ admin_password }}"
+        validate_certs: no
+      register: reset_result
+
+    - name: Display Result
       debug:
-        var: new_password.password
+        var: reset_result.status
