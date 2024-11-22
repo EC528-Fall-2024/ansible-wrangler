@@ -1,30 +1,27 @@
 ---
-- name: Reset ServiceNow Password
+- name: ServiceNow Login Troubleshooting
   hosts: localhost
   gather_facts: no
   tasks:
-    - name: Generate new password
-      ansible.builtin.password:
-        length: 16
-        chars: ascii_letters,digits,punctuation
-      register: new_password
-
-    - name: Update ServiceNow user password
+    - name: Check if ServiceNow URL is reachable
       uri:
-        url: "https://your-servicenow-instance.service-now.com/api/now/table/sys_user"
-        method: PATCH
-        headers:
-          Accept: application/json
-          Content-Type: application/json
-        body_format: json
-        body:
-          user_name: your-username
-          password: "{{ new_password.password }}"
-        user: admin-username
-        password: admin-password
-        validate_certs: no
-      register: response
+        url: "https://your-servicenow-instance.service-now.com"
+        status_code: 200
+      register: service_now_response
 
-    - name: Display new password
+    - name: Debug response from ServiceNow
       debug:
-        msg: "New password for {{ response.json.result.user_name }} is {{ new_password.password }}"
+        var: service_now_response.status
+
+    - name: Check if credentials are valid
+      uri:
+        url: "https://your-servicenow-instance.service-now.com/api/now/table/incident"
+        method: GET
+        user: "{{ servicenow_username }}"
+        password: "{{ servicenow_password }}"
+        status_code: 200
+      register: service_now_auth_response
+
+    - name: Debug authentication response from ServiceNow
+      debug:
+        var: service_now_auth_response.status
