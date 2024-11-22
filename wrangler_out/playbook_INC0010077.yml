@@ -1,15 +1,40 @@
 ---
-- name: Check ServiceNow Accessibility
+- name: ServiceNow Login Check and Troubleshoot
   hosts: localhost
+  gather_facts: no
   tasks:
-    - name: Ensure ServiceNow is accessible
+    - name: Ensure required variables are set
+      fail:
+        msg: "ServiceNow username is not defined"
+      when: service_now_username is undefined
+
+    - name: Ensure required variables are set
+      fail:
+        msg: "ServiceNow password is not defined"
+      when: service_now_password is undefined
+
+    - name: Ensure required variables are set
+      fail:
+        msg: "ServiceNow instance URL is not defined"
+      when: service_now_instance_url is undefined
+
+    - name: Check ServiceNow login using HTTP request
       uri:
-        url: "https://your-servicenow-instance.service-now.com"
+        url: "https://{{ service_now_instance_url }}.service-now.com/api/now/table/incident"
         method: GET
-        validate_certs: yes
+        headers:
+          Content-Type: application/json
+        user: "{{ service_now_username }}"
+        password: "{{ service_now_password }}"
         status_code: 200
+        validate_certs: yes
       register: response
 
-    - name: Display response status
+    - name: Display the response from ServiceNow API call
       debug:
-        var: response.status
+        var: response.json
+
+    - name: Check if login was successful
+      fail:
+        msg: "Failed to log into ServiceNow. Status Code: {{ response.status_code }}"
+      when: response.status_code != 200
