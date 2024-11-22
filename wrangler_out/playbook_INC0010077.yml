@@ -1,31 +1,47 @@
 ---
-- name: Ensure ServiceNow access is resolved
+- name: Reset ServiceNow Password
   hosts: localhost
   gather_facts: no
   tasks:
-    - name: Check network connectivity to ServiceNow
+    - name: Prompt for ServiceNow username
+      ansible.builtin.prompt:
+        prompt: "Enter your ServiceNow username"
+        private: no
+      register: sn_username
+
+    - name: Prompt for new password
+      ansible.builtin.prompt:
+        prompt: "Enter a new password"
+        private: yes
+      register: sn_new_password
+
+    - name: Set new password in ServiceNow using REST API
       uri:
-        url: https://your-servicenow-instance.service-now.com
-        validate_certs: yes
-      register: response
+        url: "https://your-instance.service-now.com/api/now/table/sys_user?sysparm_query=user_name={{ sn_username.user_input }}"
+        method: GET
+        headers:
+          Accept: application/json
+          Authorization: 'Basic your_base64_encoded_credentials'
+        status_code: 200
+      register: user_response
 
-    - name: Debug the response status code
+    - name: Extract sys_id from the response
+      set_fact:
+        user_sys_id: "{{ user_response.json.result[0].sys_id }}"
+
+    - name: Update password for the user
+      uri:
+        url: "https://your-instance.service-now.com/api/now/table/sys_user/{{ user_sys_id }}"
+        method: PUT
+        headers:
+          Accept: application/json
+          Authorization: 'Basic your_base64_encoded_credentials'
+          Content-Type: application/json
+        body_format: json
+        body:
+          password: "{{ sn_new_password.user_input }}"
+        status_code: 200
+
+    - name: Notify of successful password reset
       debug:
-        msg: "Response Status Code: {{ response.status_code }}"
-
-    - name: Ensure valid HTTP status code
-      assert:
-        that:
-          - response.status_code == 200
-        fail_msg: "Failed to access ServiceNow. Check network and credentials."
-        success_msg: "Successfully connected to ServiceNow."
-
-    - name: Update DNS cache if needed
-      command: sudo systemctl restart NetworkManager
-
-    - name: Clear browser cookies and cache
-      shell: >
-        rm -rf ~/.cache/mozilla/firefox/*.default-release/{cookies.sqlite,cache2}
-
-    - name: Restart web browser
-      shell: killall firefox && firefox https://your-servicenow-instance.service-now.com &
+        msg: "Password for user {{ sn_username.user_input }} has been successfully updated."
