@@ -1,40 +1,32 @@
 ---
-- name: ServiceNow Login Check and Troubleshoot
+- name: Reset ServiceNow Password
   hosts: localhost
   gather_facts: no
   tasks:
-    - name: Ensure required variables are set
-      fail:
-        msg: "ServiceNow username is not defined"
-      when: service_now_username is undefined
-
-    - name: Ensure required variables are set
-      fail:
-        msg: "ServiceNow password is not defined"
-      when: service_now_password is undefined
-
-    - name: Ensure required variables are set
-      fail:
-        msg: "ServiceNow instance URL is not defined"
-      when: service_now_instance_url is undefined
-
-    - name: Check ServiceNow login using HTTP request
+    - name: Retrieve current instance information
       uri:
-        url: "https://{{ service_now_instance_url }}.service-now.com/api/now/table/incident"
+        url: "https://your_instance.service-now.com/api/now/table/sys_user?sysparm_query=user_name={{ username }}"
         method: GET
         headers:
-          Content-Type: application/json
-        user: "{{ service_now_username }}"
-        password: "{{ service_now_password }}"
-        status_code: 200
-        validate_certs: yes
-      register: response
+          Accept: application/json
+          Authorization: 'Basic {{ b64encode(service_now_username + ":" + service_now_password) }}'
+        validate_certs: false
+      register: user_info
 
-    - name: Display the response from ServiceNow API call
+    - name: Reset user password
+      uri:
+        url: "https://your_instance.service-now.com/api/now/table/sys_user/{{ user_info.json.result[0].sys_id }}/password_reset"
+        method: PUT
+        body_format: json
+        body:
+          new_password: "{{ new_password }}"
+        headers:
+          Accept: application/json
+          Authorization: 'Basic {{ b64encode(service_now_username + ":" + service_now_password) }}'
+        validate_certs: false
+      when: user_info.json.result | length > 0
+
+    - name: Notify if user not found
       debug:
-        var: response.json
-
-    - name: Check if login was successful
-      fail:
-        msg: "Failed to log into ServiceNow. Status Code: {{ response.status_code }}"
-      when: response.status_code != 200
+        msg: "User not found in ServiceNow"
+      when: user_info.json.result | length == 0
