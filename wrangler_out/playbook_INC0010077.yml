@@ -1,42 +1,24 @@
 ---
-- name: ServiceNow Login Troubleshooting Playbook
+- name: ServiceNow Access Check Playbook
   hosts: localhost
   gather_facts: no
 
   tasks:
-    - name: Check if required variables are set
-      fail:
-        msg: "ServiceNow username is not defined"
-      when: service_now_username is undefined
-
-    - name: Check if required variables are set
-      fail:
-        msg: "ServiceNow password is not defined"
-      when: service_now_password is undefined
-
-    - name: Check if required variables are set
-      fail:
-        msg: "ServiceNow instance URL is not defined"
-      when: service_now_instance_url is undefined
-
-    - name: Test ServiceNow login using HTTP GET request
+    - name: Attempt to authenticate to ServiceNow using HTTP API
       uri:
-        url: "https://{{ service_now_instance_url }}/api/now/table/incident"
+        url: "https://your-instance.service-now.com/api/now/table/incident"
         method: GET
-        user: "{{ service_now_username }}"
-        password: "{{ service_now_password }}"
+        user: your_username
+        password: your_password
         validate_certs: yes
+        force_basic_auth: yes
       register: response
 
-    - name: Display the status code of the ServiceNow login attempt
+    - name: Display the response status code
       debug:
-        msg: "ServiceNow login attempt returned status code {{ response.status_code }}"
+        var: response.status_code
 
-    - name: Fail if the login was unsuccessful
+    - name: Check if authentication was successful
       fail:
-        msg: "Failed to log into ServiceNow. Status code: {{ response.status_code }}"
+        msg: "Failed to authenticate to ServiceNow. Please check your credentials."
       when: response.status_code != 200
-
-    - name: Display success message if login is successful
-      debug:
-        msg: "Successfully logged into ServiceNow."
