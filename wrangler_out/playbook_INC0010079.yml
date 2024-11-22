@@ -1,14 +1,9 @@
 ---
-- name: Ensure Apache2 is running on 199.94.60.165
+- name: Ensure Apache2 is running on the specified host
   hosts: 199.94.60.165
   become: yes
   tasks:
-    - name: Install Apache2 if not already installed
-      apt:
-        name: apache2
-        state: present
-
-    - name: Ensure Apache2 is started and enabled
+    - name: Start and enable Apache2 service
       service:
         name: apache2
         state: started
