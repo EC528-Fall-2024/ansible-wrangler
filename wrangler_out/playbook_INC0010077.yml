@@ -1,47 +1,41 @@
 ---
-- name: Reset ServiceNow Password
+- name: ServiceNow Login Troubleshooting Playbook
   hosts: localhost
   gather_facts: no
+
   tasks:
-    - name: Prompt for ServiceNow username
-      ansible.builtin.prompt:
-        prompt: "Enter your ServiceNow username"
-        private: no
-      register: sn_username
+    - name: Check if required variables are set
+      fail:
+        msg: "ServiceNow instance URL is not defined"
+      when: service_now_instance_url is undefined or service_now_instance_url == ""
 
-    - name: Prompt for new password
-      ansible.builtin.prompt:
-        prompt: "Enter a new password"
-        private: yes
-      register: sn_new_password
+    - name: Check if required variables are set
+      fail:
+        msg: "ServiceNow username is not defined"
+      when: service_now_username is undefined or service_now_username == ""
 
-    - name: Set new password in ServiceNow using REST API
+    - name: Check if required variables are set
+      fail:
+        msg: "ServiceNow password is not defined"
+      when: service_now_password is undefined or service_now_password == ""
+
+    - name: Login to ServiceNow using URI module
       uri:
-        url: "https://your-instance.service-now.com/api/now/table/sys_user?sysparm_query=user_name={{ sn_username.user_input }}"
+        url: "{{ service_now_instance_url }}/api/now/table/incident?sysparm_limit=1"
         method: GET
-        headers:
-          Accept: application/json
-          Authorization: 'Basic your_base64_encoded_credentials'
+        user: "{{ service_now_username }}"
+        password: "{{ service_now_password }}"
+        validate_certs: no
         status_code: 200
-      register: user_response
+        return_content: yes
+      register: response
 
-    - name: Extract sys_id from the response
-      set_fact:
-        user_sys_id: "{{ user_response.json.result[0].sys_id }}"
-
-    - name: Update password for the user
-      uri:
-        url: "https://your-instance.service-now.com/api/now/table/sys_user/{{ user_sys_id }}"
-        method: PUT
-        headers:
-          Accept: application/json
-          Authorization: 'Basic your_base64_encoded_credentials'
-          Content-Type: application/json
-        body_format: json
-        body:
-          password: "{{ sn_new_password.user_input }}"
-        status_code: 200
-
-    - name: Notify of successful password reset
+    - name: Display response if login successful
       debug:
-        msg: "Password for user {{ sn_username.user_input }} has been successfully updated."
+        var: response.content
+      when: response.status == 200
+
+    - name: Fail task if login unsuccessful
+      fail:
+        msg: "Failed to log into ServiceNow. Status Code: {{ response.status }}"
+      when: response.status != 200
