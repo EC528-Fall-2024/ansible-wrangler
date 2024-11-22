@@ -3,8 +3,13 @@
   hosts: 199.94.60.165
   become: yes
   tasks:
-    - name: Start and enable Apache2 service
-      ansible.builtin.service:
+    - name: Install Apache2 if not already installed
+      apt:
+        name: apache2
+        state: present
+
+    - name: Ensure Apache2 is started and enabled
+      service:
         name: apache2
         state: started
-        enabled: true
+        enabled: yes
