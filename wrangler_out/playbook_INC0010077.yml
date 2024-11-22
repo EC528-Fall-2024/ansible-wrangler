@@ -1,24 +1,24 @@
 ---
-- name: ServiceNow Login Check
+- name: ServiceNow Login Task
   hosts: localhost
   gather_facts: no
   tasks:
-    - name: Attempt to login to ServiceNow
+    - name: Check if credentials are valid by logging into ServiceNow
       uri:
-        url: "https://your_instance.service-now.com/api/now/table/incident"
+        url: "https://your-instance.service-now.com/api/now/table/incident"
         method: GET
-        user: your_username
-        password: your_password
+        user: "{{ service_now_username }}"
+        password: "{{ service_now_password }}"
         validate_certs: no
-        force_basic_auth: yes
+        status_code: 200
       register: response
 
-    - name: Check if login was successful
+    - name: Display login result
       debug:
-        msg: "Login Successful!"
+        msg: "Login successful"
       when: response.status == 200
 
-    - name: Display error message if login failed
-      debug:
-        msg: "Failed to log in. Status code: {{ response.status }}"
+    - name: Fail if login is unsuccessful
+      fail:
+        msg: "Failed to log into ServiceNow. Please check your credentials."
       when: response.status != 200
