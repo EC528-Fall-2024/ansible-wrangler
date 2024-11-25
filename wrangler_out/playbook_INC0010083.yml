@@ -1,0 +1,22 @@
+---
+- name: Ensure Nginx is installed and running
+  hosts: all
+  become: yes
+  tasks:
+    - name: Install Nginx
+      apt:
+        name: nginx
+        state: present
+      when: ansible_os_family == "Debian"
+
+    - name: Install Nginx on RedHat
+      yum:
+        name: nginx
+        state: present
+      when: ansible_os_family == "RedHat"
+
+    - name: Start and enable Nginx service
+      systemd:
+        name: nginx
+        state: started
+        enabled: yes
