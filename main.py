@@ -8,18 +8,26 @@ from dotenv import load_dotenv
 from llama_interface import generate_ansible_playbook, create_faiss_index
 from awx import create_job_template, launch_job, track_job, trigger_project_update
 from utils import check_gpu_availability
+
 # Load environment variables
 load_dotenv(override=True)
+
+# Use GPU
 use_gpu=check_gpu_availability()
 print(f'GPU: {use_gpu}')
+
 # Connect to ServiceNow API
 instance = os.getenv("INSTANCE")
 username = os.getenv("USERNAME")
 password = os.getenv("PASSWORD")
+ssh_credential_id = os.getenv("CREDENTIAL_ID")
+server_limit = os.getenv("SERVER_LIMIT")
+
 journal_endpoint = '/api/now/table/sys_journal_field'
 endpoint = '/api/now/table/incident'
 user_endpoint = '/api/now/table/sys_user'
-PLAYBOOKS_DIR = 'existing_playbooks/' 
+PLAYBOOKS_DIR = 'existing_playbooks/'
+
 # Form the complete URL with filters and ordering by number in ascending order
 user_name = "System Administrator" ## UPDATE USER
 url = instance + user_endpoint + "?sysparm_query=name=" + user_name
@@ -37,8 +45,6 @@ headers = {
 
 # Fetch user sys_id
 create_faiss_index(use_gpu=use_gpu)
-
-
 
 def update_incident(url, payload, headers, username, password):
     response = requests.patch(url, json=payload, headers=headers, auth=HTTPBasicAuth(username, password))
@@ -64,8 +70,8 @@ def awx(incident_number, playbook):
     # Set playbook path for AWX
     awx_playbook_path = f"{out_directory}/{playbook_filename}"
     # Use AWX to run the playbook
-    job_template_id = create_job_template(awx_playbook_path)
-    job_id = launch_job(job_template_id)
+    job_template_id = create_job_template(awx_playbook_path, ssh_credential_id)
+    job_id = launch_job(job_template_id, ssh_credential_id, limit=server_limit)
     job_status = track_job(job_id)
     return job_status
 
