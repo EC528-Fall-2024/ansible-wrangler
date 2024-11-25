@@ -3,21 +3,29 @@
   hosts: all
   become: yes
   tasks:
-    - name: Ensure a package is installed
-      apt:
-        name: vim
+    - name: Ensure Apache is installed and started
+      ansible.builtin.yum:
+        name: httpd
         state: present
 
-    - name: Create a directory
-      file:
-        path: /opt/example_dir
-        state: directory
-        mode: '0755'
+    - name: Start and enable Apache service
+      ansible.builtin.service:
+        name: httpd
+        state: started
+        enabled: true
 
-    - name: Copy a file to the server
-      copy:
-        src: files/example_file.txt
-        dest: /opt/example_dir/example_file.txt
-        owner: root
-        group: root
-        mode: '0644'
+    - name: Create a simple index.html file
+      ansible.builtin.copy:
+        dest: /var/www/html/index.html
+        content: |
+          <html>
+          <head><title>Welcome</title></head>
+          <body><h1>Hello, World!</h1></body>
+          </html>
+
+    - name: Ensure firewall allows HTTP traffic
+      ansible.builtin.firewalld:
+        port: 80/tcp
+        permanent: true
+        immediate: yes
+        state: enabled
