@@ -3,20 +3,29 @@
   hosts: all
   become: yes
   tasks:
-    - name: Ensure Nginx is installed and started
+    - name: Update apt cache and upgrade packages
       apt:
-        name: nginx
-        state: present
-      when: ansible_os_family == "Debian"
+        update_cache: yes
+        upgrade: dist
 
-    - name: Ensure Nginx is installed and started
-      yum:
-        name: nginx
+    - name: Install necessary packages
+      apt:
+        name:
+          - vim
+          - git
+          - curl
         state: present
-      when: ansible_os_family == "RedHat"
 
-    - name: Start and enable Nginx service
-      systemd:
-        name: nginx
-        state: started
-        enabled: yes
+    - name: Ensure a directory exists
+      file:
+        path: /opt/myapp
+        state: directory
+        mode: '0755'
+
+    - name: Copy a file to the remote server
+      copy:
+        src: files/example.txt
+        dest: /opt/myapp/example.txt
+        owner: root
+        group: root
+        mode: '0644'
