@@ -1,27 +1,30 @@
 ---
-- name: Install and configure Apache on Ubuntu
+- name: Example Playbook
   hosts: all
   become: yes
   tasks:
-    - name: Update apt cache
+    - name: Update package cache and upgrade packages
       apt:
         update_cache: yes
+        upgrade: dist
 
-    - name: Install Apache2 package
+    - name: Install necessary packages
+      apt:
+        name:
+          - vim
+          - curl
+          - wget
+        state: present
+
+    - name: Ensure Apache is installed and running
       apt:
         name: apache2
         state: present
+      notify:
+        - restart apache
 
-    - name: Ensure Apache service is running and enabled at boot
+  handlers:
+    - name: restart apache
       service:
         name: apache2
-        state: started
-        enabled: yes
-
-    - name: Copy custom index.html to /var/www/html/
-      copy:
-        src: files/index.html
-        dest: /var/www/html/index.html
-        owner: www-data
-        group: www-data
-        mode: '0644'
+        state: restarted
