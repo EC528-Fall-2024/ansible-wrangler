@@ -3,29 +3,13 @@
   hosts: all
   become: yes
   tasks:
-    - name: Ensure Apache is installed and started
-      ansible.builtin.yum:
-        name: httpd
+    - name: Ensure a package is installed
+      apt:
+        name: nginx
         state: present
 
-    - name: Start and enable Apache service
-      ansible.builtin.service:
-        name: httpd
+    - name: Start and enable the service
+      systemd:
+        name: nginx
+        enabled: yes
         state: started
-        enabled: true
-
-    - name: Create a simple index.html file
-      ansible.builtin.copy:
-        dest: /var/www/html/index.html
-        content: |
-          <html>
-          <head><title>Welcome</title></head>
-          <body><h1>Hello, World!</h1></body>
-          </html>
-
-    - name: Ensure firewall allows HTTP traffic
-      ansible.builtin.firewalld:
-        port: 80/tcp
-        permanent: true
-        immediate: yes
-        state: enabled
