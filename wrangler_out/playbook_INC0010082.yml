@@ -1,21 +1,35 @@
 ---
-- name: Example Playbook
-  hosts: all
+- name: Install and configure Nginx
+  hosts: webservers
   become: yes
   tasks:
     - name: Update apt cache
       apt:
         update_cache: yes
 
-    - name: Install necessary packages
+    - name: Install Nginx
       apt:
-        name:
-          - vim
-          - htop
+        name: nginx
         state: present
 
-    - name: Ensure the service is running
-      service:
-        name: sshd
+    - name: Start and enable Nginx service
+      systemd:
+        name: nginx
         state: started
         enabled: yes
+
+    - name: Ensure default Nginx configuration is in place
+      copy:
+        src: files/default
+        dest: /etc/nginx/sites-available/default
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: Test Nginx configuration
+      command: nginx -t
+
+    - name: Reload Nginx to apply changes
+      systemd:
+        name: nginx
+        state: reloaded
