@@ -10,22 +10,20 @@
 
     - name: Install necessary packages
       apt:
-        name:
+        name: 
           - vim
-          - git
           - curl
         state: present
 
-    - name: Ensure a directory exists
-      file:
-        path: /opt/myapp
-        state: directory
-        mode: '0755'
+    - name: Ensure Apache is installed and started
+      apt:
+        name: apache2
+        state: present
+      notify:
+        - restart apache
 
-    - name: Copy a file to the remote server
-      copy:
-        src: files/example.txt
-        dest: /opt/myapp/example.txt
-        owner: root
-        group: root
-        mode: '0644'
+  handlers:
+    - name: restart apache
+      service:
+        name: apache2
+        state: restarted
