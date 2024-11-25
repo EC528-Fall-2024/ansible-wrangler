@@ -1,23 +1,19 @@
 ---
-- name: Example Playbook
-  hosts: all
+- name: Install and configure Nginx
+  hosts: webservers
   become: yes
   tasks:
-    - name: Ensure Apache is installed
+    - name: Update apt cache
       apt:
-        name: apache2
+        update_cache: yes
+
+    - name: Install Nginx
+      apt:
+        name: nginx
         state: present
 
-    - name: Start and enable Apache service
-      systemd:
-        name: apache2
+    - name: Ensure Nginx is running and enabled
+      service:
+        name: nginx
         state: started
-        enabled: true
-
-    - name: Copy index.html to web root
-      copy:
-        src: files/index.html
-        dest: /var/www/html/index.html
-        owner: www-data
-        group: www-data
-        mode: '0644'
+        enabled: yes
