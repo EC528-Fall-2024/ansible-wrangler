@@ -1,31 +1,15 @@
 ---
-- name: Configure server
+- name: Example Playbook
   hosts: all
   become: yes
   tasks:
-    - name: Ensure NTP is installed
-      package:
-        name: ntp
+    - name: Ensure a package is installed
+      apt:
+        name: nginx
         state: present
 
-    - name: Start and enable NTP service
-      service:
-        name: ntpd
+    - name: Start and enable the service
+      systemd:
+        name: nginx
         state: started
-        enabled: yes
-
-    - name: Update all packages to the latest version
-      yum:
-        name: '*'
-        state: latest
-
-    - name: Create a new user
-      user:
-        name: ansibleuser
-        state: present
-        shell: /bin/bash
-
-    - name: Set password for the new user
-      user:
-        name: ansibleuser
-        password: "{{ 'password123' | password_hash('sha512') }}"
+        enabled: true
