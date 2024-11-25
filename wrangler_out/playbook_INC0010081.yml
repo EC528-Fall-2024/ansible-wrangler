@@ -3,13 +3,28 @@
   hosts: all
   become: yes
   tasks:
-    - name: Ensure Apache is installed
+    - name: Update apt cache and upgrade packages
       apt:
-        name: apache2
+        update_cache: yes
+        upgrade: dist
+
+    - name: Install necessary packages
+      apt:
+        name:
+          - vim
+          - curl
         state: present
 
-    - name: Start and enable Apache service
-      service:
-        name: apache2
-        state: started
-        enabled: yes
+    - name: Ensure a directory exists
+      file:
+        path: /opt/example_dir
+        state: directory
+        mode: '0755'
+
+    - name: Copy a file to the remote server
+      copy:
+        src: files/example_file.txt
+        dest: /opt/example_dir/example_file.txt
+        owner: root
+        group: root
+        mode: '0644'
