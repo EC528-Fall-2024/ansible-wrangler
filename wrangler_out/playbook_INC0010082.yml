@@ -3,27 +3,19 @@
   hosts: all
   become: yes
   tasks:
-    - name: Update apt cache and upgrade packages
+    - name: Update apt cache
       apt:
         update_cache: yes
-        upgrade: dist
 
     - name: Install necessary packages
       apt:
-        name: 
+        name:
           - vim
-          - curl
+          - htop
         state: present
 
-    - name: Ensure Apache is installed and started
-      apt:
-        name: apache2
-        state: present
-      notify:
-        - restart apache
-
-  handlers:
-    - name: restart apache
+    - name: Ensure the service is running
       service:
-        name: apache2
-        state: restarted
+        name: sshd
+        state: started
+        enabled: yes
