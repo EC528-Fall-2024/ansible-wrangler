@@ -1,22 +1,27 @@
 ---
-- name: Example Playbook
+- name: Install and configure Apache on Ubuntu
   hosts: all
   become: yes
   tasks:
-    - name: Ensure Apache is installed and started
-      yum:
-        name: httpd
-        state: present
-      when: ansible_os_family == "RedHat"
+    - name: Update apt cache
+      apt:
+        update_cache: yes
 
-    - name: Ensure Apache is installed and started on Debian
+    - name: Install Apache2 package
       apt:
         name: apache2
         state: present
-      when: ansible_os_family == "Debian"
 
-    - name: Start and enable Apache service
+    - name: Ensure Apache service is running and enabled at boot
       service:
-        name: "{{ 'httpd' if ansible_os_family == 'RedHat' else 'apache2' }}"
+        name: apache2
         state: started
         enabled: yes
+
+    - name: Copy custom index.html to /var/www/html/
+      copy:
+        src: files/index.html
+        dest: /var/www/html/index.html
+        owner: www-data
+        group: www-data
+        mode: '0644'
