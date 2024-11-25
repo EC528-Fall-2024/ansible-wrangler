@@ -1,0 +1,27 @@
+---
+- name: Example Playbook
+  hosts: all
+  become: yes
+  tasks:
+    - name: Update package cache and upgrade all packages to the latest version
+      apt:
+        update_cache: yes
+        upgrade: dist
+
+    - name: Install necessary packages
+      apt:
+        name:
+          - nginx
+          - python3-pip
+        state: present
+
+    - name: Ensure Nginx is running and enabled
+      service:
+        name: nginx
+        state: started
+        enabled: yes
+
+    - name: Install Flask using pip
+      pip:
+        name: flask
+        state: present
