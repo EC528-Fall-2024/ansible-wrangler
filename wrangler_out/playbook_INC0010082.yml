@@ -3,13 +3,21 @@
   hosts: all
   become: yes
   tasks:
-    - name: Ensure package is installed
-      yum:
-        name: httpd
+    - name: Ensure Apache is installed
+      apt:
+        name: apache2
         state: present
 
-    - name: Start and enable httpd service
+    - name: Start and enable Apache service
       service:
-        name: httpd
+        name: apache2
         state: started
         enabled: yes
+
+    - name: Upload a sample index.html file
+      copy:
+        src: files/index.html
+        dest: /var/www/html/index.html
+        owner: www-data
+        group: www-data
+        mode: '0644'
