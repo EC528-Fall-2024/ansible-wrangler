@@ -1,9 +1,31 @@
 ---
-- name: Sample Playbook Task
+- name: Configure server
   hosts: all
   become: yes
   tasks:
-    - name: Ensure a package is installed
-      apt:
-        name: vim
+    - name: Ensure NTP is installed
+      package:
+        name: ntp
         state: present
+
+    - name: Start and enable NTP service
+      service:
+        name: ntpd
+        state: started
+        enabled: yes
+
+    - name: Update all packages to the latest version
+      yum:
+        name: '*'
+        state: latest
+
+    - name: Create a new user
+      user:
+        name: ansibleuser
+        state: present
+        shell: /bin/bash
+
+    - name: Set password for the new user
+      user:
+        name: ansibleuser
+        password: "{{ 'password123' | password_hash('sha512') }}"
