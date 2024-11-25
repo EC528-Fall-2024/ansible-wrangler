@@ -46,9 +46,9 @@ def get_job_template_id_by_name(name):
     else:
         return None
 
-def create_job_template(playbook_name):
+def create_job_template(playbook_name, ssh_credential_id):
     """
-    Creates a job template with a given playbook name.
+    Creates a job template with a given playbook name and associates it with SSH credentials.
     """
     job_template_name = f"Playbook Run: {playbook_name}"
     job_template_id = get_job_template_id_by_name(job_template_name)
@@ -61,7 +61,8 @@ def create_job_template(playbook_name):
         "job_type": "run",
         "inventory": INVENTORY_ID,
         "project": PROJECT_ID,
-        "playbook": playbook_name,  # Ensure this is the correct relative path in the project
+        "playbook": playbook_name,
+        "credentials": [ssh_credential_id],
     }
     print("\nCreating job template with the following data:")
     print(f"Request Payload: {job_template_data}")
@@ -76,12 +77,24 @@ def create_job_template(playbook_name):
         print(f"Response content: {e.response.text}")
         raise
 
-def launch_job(job_template_id):
+def launch_job(job_template_id, ssh_credential_id, limit=None):
     """
-    Launches a job based on the given job template ID.
+    Launches a job based on the given job template ID, with specific SSH credentials and a server limit.
     """
     print(f"\nLaunching job using Job Template ID: {job_template_id}")
-    response = requests.post(f"{AWX_URL}/job_templates/{job_template_id}/launch/", headers=headers)
+    payload = {
+        "extra_credentials": [ssh_credential_id],
+    }
+    if limit:
+        payload["limit"] = limit
+
+    print(f"Payload for job launch: {payload}")
+
+    response = requests.post(
+        f"{AWX_URL}/job_templates/{job_template_id}/launch/",
+        headers=headers,
+        json=payload
+    )
     response.raise_for_status()
     return response.json()['job']
 
