@@ -3,21 +3,21 @@
   hosts: all
   become: yes
   tasks:
-    - name: Ensure Apache is installed
+    - name: Ensure a package is installed
       apt:
-        name: apache2
+        name: vim
         state: present
 
-    - name: Start and enable Apache service
-      service:
-        name: apache2
-        state: started
-        enabled: yes
+    - name: Create a directory
+      file:
+        path: /opt/example_dir
+        state: directory
+        mode: '0755'
 
-    - name: Upload a sample index.html file
+    - name: Copy a file to the server
       copy:
-        src: files/index.html
-        dest: /var/www/html/index.html
-        owner: www-data
-        group: www-data
+        src: files/example_file.txt
+        dest: /opt/example_dir/example_file.txt
+        owner: root
+        group: root
         mode: '0644'
