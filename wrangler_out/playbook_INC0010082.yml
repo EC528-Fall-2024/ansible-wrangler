@@ -1,14 +1,17 @@
 ---
-- name: Example Playbook
+- name: Update and install packages
   hosts: all
+  become: yes
   tasks:
-    - name: Ensure a package is installed
+    - name: Update all packages to the latest version
       apt:
-        name: nginx
-        state: present
+        update_cache: yes
+        upgrade: dist
 
-    - name: Start and enable the service
-      systemd:
-        name: nginx
-        enabled: yes
-        state: started
+    - name: Install necessary packages
+      apt:
+        name:
+          - vim
+          - curl
+          - git
+        state: present
