@@ -1,30 +1,23 @@
 ---
-- name: Example Playbook
-  hosts: all
+- name: Install and configure Apache web server
+  hosts: webservers
   become: yes
   tasks:
-    - name: Update apt cache and upgrade packages
-      apt:
-        update_cache: yes
-        upgrade: dist
-
-    - name: Install necessary packages
-      apt:
-        name:
-          - vim
-          - curl
+    - name: Ensure Apache is installed
+      yum:
+        name: httpd
         state: present
 
-    - name: Ensure a directory exists
-      file:
-        path: /opt/example_dir
-        state: directory
-        mode: '0755'
+    - name: Start and enable Apache service
+      service:
+        name: httpd
+        state: started
+        enabled: yes
 
-    - name: Copy a file to the remote server
+    - name: Copy index.html to web root
       copy:
-        src: files/example_file.txt
-        dest: /opt/example_dir/example_file.txt
-        owner: root
-        group: root
+        src: files/index.html
+        dest: /var/www/html/index.html
+        owner: apache
+        group: apache
         mode: '0644'
