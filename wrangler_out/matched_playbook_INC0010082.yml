@@ -1,9 +1,6 @@
 ---
 - hosts: all
-  vars:
-    - username: sammy
-    - home: /home/sammy   
   tasks:
-    - name: print variables
+    - name: Print message
       debug:
-        msg: "Username: {{ username }}, Home dir: {{ home }}"
+        msg: Hello Ansible World
