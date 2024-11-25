@@ -1,0 +1,40 @@
+---
+- name: Configure and deploy application
+  hosts: all
+  become: yes
+  tasks:
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+
+    - name: Install necessary packages
+      apt:
+        name: 
+          - nginx
+          - python3-pip
+        state: present
+
+    - name: Copy application files
+      copy:
+        src: /local/path/to/app
+        dest: /var/www/html/
+
+    - name: Start and enable Nginx service
+      service:
+        name: nginx
+        state: started
+        enabled: yes
+
+    - name: Install Python dependencies
+      pip:
+        requirements: /var/www/html/requirements.txt
+
+    - name: Configure Nginx for application
+      template:
+        src: templates/nginx.conf.j2
+        dest: /etc/nginx/sites-available/default
+
+    - name: Reload Nginx to apply changes
+      service:
+        name: nginx
+        state: reloaded
