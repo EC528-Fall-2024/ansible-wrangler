@@ -1,17 +1,22 @@
 ---
-- name: Update and install packages
+- name: Example Playbook
   hosts: all
   become: yes
   tasks:
-    - name: Update all packages to the latest version
-      apt:
-        update_cache: yes
-        upgrade: dist
-
-    - name: Install necessary packages
-      apt:
-        name:
-          - vim
-          - curl
-          - git
+    - name: Ensure Apache is installed and started
+      yum:
+        name: httpd
         state: present
+      when: ansible_os_family == "RedHat"
+
+    - name: Ensure Apache is installed and started on Debian
+      apt:
+        name: apache2
+        state: present
+      when: ansible_os_family == "Debian"
+
+    - name: Start and enable Apache service
+      service:
+        name: "{{ 'httpd' if ansible_os_family == 'RedHat' else 'apache2' }}"
+        state: started
+        enabled: yes
