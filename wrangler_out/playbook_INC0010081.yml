@@ -3,18 +3,13 @@
   hosts: all
   become: yes
   tasks:
-    - name: Ensure a package is installed
+    - name: Ensure Nginx is installed
       apt:
-        name: vim
+        name: nginx
         state: present
 
-    - name: Start and enable a service
+    - name: Start and enable Nginx service
       systemd:
         name: nginx
-        state: started
         enabled: true
-
-    - name: Copy a file to remote servers
-      copy:
-        src: /local/path/to/file.txt
-        dest: /remote/path/to/destination.txt
+        state: started
