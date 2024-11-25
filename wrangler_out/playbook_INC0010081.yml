@@ -1,15 +1,32 @@
 ---
-- name: Example Playbook
+- name: Install and configure Nginx
   hosts: all
   become: yes
   tasks:
-    - name: Ensure a package is installed
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+
+    - name: Install Nginx
       apt:
         name: nginx
         state: present
 
-    - name: Start and enable the service
+    - name: Ensure Nginx is running and enabled at boot
       systemd:
         name: nginx
         state: started
-        enabled: true
+        enabled: yes
+
+    - name: Copy custom Nginx configuration file
+      copy:
+        src: files/nginx.conf
+        dest: /etc/nginx/nginx.conf
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: Restart Nginx to apply changes
+      systemd:
+        name: nginx
+        state: restarted
