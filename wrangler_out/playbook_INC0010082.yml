@@ -1,18 +1,15 @@
 ---
-- name: Update and Install Packages
+- name: Example Playbook
   hosts: all
   become: yes
   tasks:
-    - name: Update apt cache
-      apt:
-        update_cache: yes
-
-    - name: Install necessary packages
-      apt:
-        name: "{{ packages }}"
+    - name: Ensure package is installed
+      yum:
+        name: httpd
         state: present
-      vars:
-        packages:
-          - vim
-          - curl
-          - git
+
+    - name: Start and enable httpd service
+      service:
+        name: httpd
+        state: started
+        enabled: yes
