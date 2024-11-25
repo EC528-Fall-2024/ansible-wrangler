@@ -3,13 +3,20 @@
   hosts: all
   become: yes
   tasks:
-    - name: Ensure a package is installed
+    - name: Ensure Nginx is installed and started
       apt:
         name: nginx
         state: present
+      when: ansible_os_family == "Debian"
 
-    - name: Start and enable the service
+    - name: Ensure Nginx is installed and started
+      yum:
+        name: nginx
+        state: present
+      when: ansible_os_family == "RedHat"
+
+    - name: Start and enable Nginx service
       systemd:
         name: nginx
-        enabled: yes
         state: started
+        enabled: yes
