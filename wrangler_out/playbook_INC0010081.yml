@@ -3,13 +3,18 @@
   hosts: all
   become: yes
   tasks:
-    - name: Ensure Apache is installed
+    - name: Ensure a package is installed
       apt:
-        name: apache2
+        name: vim
         state: present
 
-    - name: Start and enable Apache service
+    - name: Start and enable a service
       systemd:
-        name: apache2
+        name: nginx
         state: started
         enabled: true
+
+    - name: Copy a file to remote servers
+      copy:
+        src: /local/path/to/file.txt
+        dest: /remote/path/to/destination.txt
