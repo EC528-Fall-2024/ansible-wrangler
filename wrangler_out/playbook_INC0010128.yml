@@ -1,12 +1,8 @@
 ---
-- host: webserver
-  become: yes
+- name: Restart Apache
+  hosts: all
   tasks:
-  - name: Installing httpd 
-    yum:
-      name: httpd
-      state: latest
-  - name: Starting the httpd
-    service:
-      name: httpd
-      status: started
+    - name: Ensure Apache is restarted
+      service:
+        name: apache2
+        state: restarted
