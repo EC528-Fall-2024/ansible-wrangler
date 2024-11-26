@@ -1,0 +1,27 @@
+---
+- name: Install and configure web server
+  hosts: webservers
+  become: yes
+  tasks:
+    - name: Update package cache
+      apt:
+        update_cache: yes
+
+    - name: Install Apache2
+      apt:
+        name: apache2
+        state: present
+
+    - name: Start and enable Apache2 service
+      systemd:
+        name: apache2
+        state: started
+        enabled: true
+
+    - name: Copy index.html file
+      copy:
+        src: files/index.html
+        dest: /var/www/html/index.html
+        owner: www-data
+        group: www-data
+        mode: '0644'
