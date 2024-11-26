@@ -2,10 +2,8 @@
 - name: Restart Visual Studio Code on MacBook
   hosts: localhost
   tasks:
-    - name: Force kill Visual Studio Code
-      ansible.builtin.command: pkill -f "Visual Studio Code"
+    - name: Stop Visual Studio Code
+      shell: osascript -e 'quit app "Visual Studio Code"'
 
-    - name: Launch Visual Studio Code
-      ansible.builtin.homebrew_cask:
-        name: visual-studio-code
-        state: latest
+    - name: Start Visual Studio Code
+      shell: open -a "Visual Studio Code"
