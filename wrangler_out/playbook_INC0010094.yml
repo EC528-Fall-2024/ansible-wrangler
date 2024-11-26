@@ -1,0 +1,16 @@
+---
+- name: Example Playbook
+  hosts: all
+  tasks:
+    - name: Ensure package is installed
+      apt:
+        name: nginx
+        state: present
+      become: yes
+
+    - name: Start and enable Nginx service
+      systemd:
+        name: nginx
+        state: started
+        enabled: yes
+      become: yes
