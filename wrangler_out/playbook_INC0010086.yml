@@ -1,24 +1,15 @@
 ---
-- name: Configure web server
-  hosts: webservers
+- name: Example Playbook
+  hosts: all
   become: yes
   tasks:
-    - name: Install Apache
+    - name: Ensure a package is installed
       apt:
-        name: apache2
+        name: nginx
         state: present
-        update_cache: yes
 
-    - name: Start and enable Apache service
+    - name: Start and enable the service
       systemd:
-        name: apache2
-        enabled: true
+        name: nginx
         state: started
-
-    - name: Copy index.html file
-      copy:
-        src: files/index.html
-        dest: /var/www/html/index.html
-        owner: www-data
-        group: www-data
-        mode: '0644'
+        enabled: yes
