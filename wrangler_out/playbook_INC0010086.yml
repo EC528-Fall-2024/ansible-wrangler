@@ -1,20 +1,24 @@
 ---
-- name: Update and Install Packages
-  hosts: all
+- name: Configure web server
+  hosts: webservers
   become: yes
   tasks:
-    - name: Update package lists
+    - name: Install Apache
       apt:
+        name: apache2
+        state: present
         update_cache: yes
 
-    - name: Upgrade all packages to the latest version
-      apt:
-        upgrade: dist
+    - name: Start and enable Apache service
+      systemd:
+        name: apache2
+        enabled: true
+        state: started
 
-    - name: Install necessary packages
-      apt:
-        name:
-          - vim
-          - curl
-          - git
-        state: present
+    - name: Copy index.html file
+      copy:
+        src: files/index.html
+        dest: /var/www/html/index.html
+        owner: www-data
+        group: www-data
+        mode: '0644'
