@@ -1,0 +1,36 @@
+---
+- name: Configure and manage servers
+  hosts: all
+  become: yes
+  tasks:
+    - name: Ensure the latest updates are installed
+      apt:
+        update_cache: yes
+        upgrade: dist
+
+    - name: Install necessary packages
+      apt:
+        name:
+          - vim
+          - curl
+          - wget
+        state: present
+
+    - name: Create a new user
+      user:
+        name: ansibleuser
+        groups: sudo
+        append: yes
+        createhome: yes
+        shell: /bin/bash
+
+    - name: Set password for the new user
+      user:
+        name: ansibleuser
+        password: "{{ 'password123' | password_hash('sha512') }}"
+
+    - name: Ensure SSH key is present in authorized_keys for the new user
+      authorized_key:
+        user: ansibleuser
+        state: present
+        key: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC6eNtGpNGwstc.... user@example.com"
