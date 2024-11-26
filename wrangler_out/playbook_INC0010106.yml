@@ -1,0 +1,30 @@
+---
+- name: Example Playbook
+  hosts: all
+  become: yes
+  tasks:
+    - name: Ensure Apache is installed and running
+      yum:
+        name: httpd
+        state: present
+      when: ansible_os_family == "RedHat"
+
+    - name: Ensure Apache is started and enabled on boot for RedHat family
+      service:
+        name: httpd
+        state: started
+        enabled: yes
+      when: ansible_os_family == "RedHat"
+
+    - name: Ensure Apache is installed and running
+      apt:
+        name: apache2
+        state: present
+      when: ansible_os_family == "Debian"
+
+    - name: Ensure Apache is started and enabled on boot for Debian family
+      service:
+        name: apache2
+        state: started
+        enabled: yes
+      when: ansible_os_family == "Debian"
