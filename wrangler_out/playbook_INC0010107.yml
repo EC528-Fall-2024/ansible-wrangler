@@ -1,0 +1,8 @@
+---
+- name: Restart Apache
+  hosts: all
+  tasks:
+    - name: Ensure Apache is restarted
+      service:
+        name: httpd
+        state: restarted
