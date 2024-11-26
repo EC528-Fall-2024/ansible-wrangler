@@ -1,1 +1,16 @@
---- - name: Ensure Apache is running   hosts: webservers   become: yes   tasks:     - name: Start Apache service if it's stopped       service:         name: apache2         state: started         enabled: yes      - name: Restart Apache service to ensure it's running       service:         name: httpd         state: restarted         enabled: yes       ignore_errors: true
+# Ansible playbook comprimises of hosts and task which in turns
+# contains task name and module name 
+--- # start of index
+- host: webserver
+  become: yes
+  tasks:
+  - name: Installing httpd 
+    yum:
+      name: httpd
+      state: latest
+  - name: Starting the httpd
+    service:
+      name: httpd
+      status: started
+
+# ansible-playbook -i inv web.yml --check
