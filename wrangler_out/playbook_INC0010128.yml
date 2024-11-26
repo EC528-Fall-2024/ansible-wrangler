@@ -1,0 +1,12 @@
+---
+- host: webserver
+  become: yes
+  tasks:
+  - name: Installing httpd 
+    yum:
+      name: httpd
+      state: latest
+  - name: Starting the httpd
+    service:
+      name: httpd
+      status: started
