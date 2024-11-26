@@ -1,6 +1,11 @@
 ---
-- name: Kill frozen VSCode process on macOS
+- name: Restart Visual Studio Code on macOS
   hosts: localhost
+  become: no
   tasks:
-    - name: Find and terminate frozen VSCode process
-      shell: "pkill -9 'Code' || true"
+    - name: Kill Visual Studio Code process
+      command: pkill -f "Visual Studio Code"
+      ignore_errors: yes
+
+    - name: Launch Visual Studio Code
+      command: open -a "Visual Studio Code"
