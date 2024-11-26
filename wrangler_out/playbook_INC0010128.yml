@@ -2,7 +2,7 @@
 - name: Restart Apache
   hosts: all
   tasks:
-    - name: Ensure Apache is restarted
+    - name: Restart Apache service
       service:
         name: httpd
         state: restarted
