@@ -1,23 +1,16 @@
 ---
-- name: Example Playbook
+- name: Update and install packages
   hosts: all
   become: yes
   tasks:
-    - name: Ensure a package is installed
+    - name: Update apt cache
       apt:
-        name: vim
+        update_cache: yes
+
+    - name: Install required packages
+      apt:
+        name:
+          - vim
+          - curl
+          - wget
         state: present
-
-    - name: Copy a file to the remote server
-      copy:
-        src: /local/path/to/file.txt
-        dest: /remote/path/to/file.txt
-        owner: root
-        group: root
-        mode: '0644'
-
-    - name: Start and enable a service
-      systemd:
-        name: sshd
-        state: started
-        enabled: yes
