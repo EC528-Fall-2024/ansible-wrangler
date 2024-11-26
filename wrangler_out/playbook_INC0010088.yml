@@ -1,27 +1,35 @@
 ---
-- name: Install and configure web server
-  hosts: webservers
+- name: Install and configure Nginx
+  hosts: all
   become: yes
   tasks:
-    - name: Update package cache
+    - name: Update apt cache
       apt:
         update_cache: yes
 
-    - name: Install Apache2
+    - name: Install Nginx
       apt:
-        name: apache2
+        name: nginx
         state: present
 
-    - name: Start and enable Apache2 service
+    - name: Ensure Nginx is running and enabled at boot
       systemd:
-        name: apache2
+        name: nginx
         state: started
-        enabled: true
+        enabled: yes
 
-    - name: Copy index.html file
+    - name: Copy custom Nginx configuration file
       copy:
-        src: files/index.html
-        dest: /var/www/html/index.html
-        owner: www-data
-        group: www-data
+        src: files/nginx.conf
+        dest: /etc/nginx/nginx.conf
+        owner: root
+        group: root
         mode: '0644'
+
+    - name: Test Nginx configuration
+      command: nginx -t
+
+    - name: Reload Nginx to apply changes
+      systemd:
+        name: nginx
+        state: reloaded
