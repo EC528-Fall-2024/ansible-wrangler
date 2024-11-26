@@ -1,16 +1,34 @@
 ---
-- name: Update and install packages
+- name: Configure and Deploy Application
   hosts: all
   become: yes
   tasks:
-    - name: Update package cache
+    - name: Update apt cache
       apt:
         update_cache: yes
 
-    - name: Install required packages
+    - name: Install necessary packages
       apt:
         name:
-          - vim
-          - curl
-          - git
+          - nginx
+          - python3-pip
         state: present
+
+    - name: Copy application files
+      copy:
+        src: /local/path/to/app
+        dest: /var/www/html/
+        owner: www-data
+        group: www-data
+        mode: '0755'
+
+    - name: Start and enable Nginx service
+      systemd:
+        name: nginx
+        state: started
+        enabled: yes
+
+    - name: Ensure application is running
+      uri:
+        url: http://localhost/
+        status_code: 200
