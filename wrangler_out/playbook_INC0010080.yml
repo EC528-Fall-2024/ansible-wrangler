@@ -1,11 +1,6 @@
 ---
-- name: Force quit Visual Studio Code on MacBook
+- name: Restart Visual Studio Code on MacBook
   hosts: localhost
   tasks:
-    - name: Ensure VSCode is not running
-      ansible.builtin.command: osascript -e 'quit app "Visual Studio Code"'
-      ignore_errors: yes
-
-    - name: Kill VSCode process if it still exists
-      ansible.builtin.shell: pkill -f "Visual Studio Code"
-      ignore_errors: yes
+    - name: Force quit Visual Studio Code
+      command: pkill -f "Visual Studio Code"
