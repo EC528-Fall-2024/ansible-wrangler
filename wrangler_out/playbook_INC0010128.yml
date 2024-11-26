@@ -4,5 +4,5 @@
   tasks:
     - name: Ensure Apache is restarted
       service:
-        name: apache2
+        name: httpd
         state: restarted
