@@ -1,7 +1,6 @@
 ---
 - name: Restart Apache
   hosts: all
-  become: yes
   tasks:
     - name: Ensure Apache is restarted
       service:
