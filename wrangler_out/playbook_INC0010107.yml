@@ -1,36 +1,12 @@
-#Ansible Playbook for Users 
- #This will run the script Ansible-playbook Users.yml
-Vars: #Variables 
-    http_port: 80
-    max_clients: 200
+---
+- name: Perform Graceful Apache Restart
+  hosts: all
+  become: true
+  tasks:
+    - name: Ensure Apache is installed
+      apt:
+        name: apache2
+        state: present
 
--name: creating a demo user # Task
-  os_user:  # Module
-    name: demouser
-    password: secret-pass
-    update_password: on_create
-    email: demo@example.com
-    domain: "{{ demo_domain.id }}"
-    state: present
-
--name: adding role to the group
-  os_user_role: # Module
-    group: demo2
-    role: demorole
-    domain: "{{ demo_domain.id }}"
-
--name: ensure apache is at the latest version
-  yum:
-    name: httpd
-    state: latest
-
-handlers: # Handler 
-    - name: restart memcached
-      service:
-        name: memcached
-        state: restarted
-
-    - name: restart apache
-      service:
-        name: apache
-        state: restarted
+    - name: Perform a graceful restart of Apache
+      command: apachectl graceful
