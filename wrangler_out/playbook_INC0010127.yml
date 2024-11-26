@@ -1,0 +1,11 @@
+---
+- name: Test Playbook
+  hosts: localhost
+  tasks:
+    - name: Run a simple command
+      command: echo "Hello, World!"
+      register: result
+
+    - name: Debug the output
+      debug:
+        var: result.stdout
