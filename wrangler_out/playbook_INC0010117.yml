@@ -1,0 +1,7 @@
+---
+- name: Type shit
+  hosts: localhost
+  tasks:
+    - name: Print shit
+      debug:
+        msg: "shit"
