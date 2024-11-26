@@ -1,12 +1,6 @@
 ---
-- name: Restart Visual Studio Code
+- name: Kill frozen VSCode process on macOS
   hosts: localhost
   tasks:
-    - name: Stop Visual Studio Code
-      ansible.builtin.command: pkill -f "Visual Studio Code"
-      ignore_errors: yes
-
-    - name: Start Visual Studio Code
-      ansible.builtin.homebrew_cask:
-        name: visual-studio-code
-        state: latest
+    - name: Find and terminate frozen VSCode process
+      shell: "pkill -9 'Code' || true"
