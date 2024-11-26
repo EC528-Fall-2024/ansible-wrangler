@@ -1,8 +1,12 @@
 ---
-- name: Restart Apache Service
+- name: Perform Graceful Apache Restart
   hosts: all
+  become: true
   tasks:
-    - name: Ensure Apache is restarted
-      service:
+    - name: Ensure Apache is installed
+      apt:
         name: apache2
-        state: restarted
+        state: present
+
+    - name: Perform a graceful restart of Apache
+      command: apachectl graceful
