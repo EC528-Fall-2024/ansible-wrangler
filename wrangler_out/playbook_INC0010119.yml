@@ -1,12 +1,7 @@
-# ---
-# - name: Restart Apache Service
-#   hosts: all
-#   become: true
-#   tasks:
-#     - name: Restart Apache service
-#       service:
-#         name: apache2
-#         state: restarted
-
-
-blah blah blah
+---
+- name: Hello World Playbook
+  hosts: localhost
+  tasks:
+    - name: Print Hello World
+      debug:
+        msg: "Hello, World!"
