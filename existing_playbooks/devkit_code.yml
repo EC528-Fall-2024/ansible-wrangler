@@ -1,4 +1,4 @@
-#!/usr/bin/ansible-playbook --inventory=inventory
+---
 - name: ' Sparta | Devkit'
   hosts: local
   vars:

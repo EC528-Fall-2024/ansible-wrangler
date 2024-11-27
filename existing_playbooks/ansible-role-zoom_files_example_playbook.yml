@@ -1,4 +1,3 @@
-#!/usr/bin/env ansible-playbook
 ---
 - name: zoom | Ensure zoom is installed on system
   become: yes

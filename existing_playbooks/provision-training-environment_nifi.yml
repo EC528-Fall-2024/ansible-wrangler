@@ -1,5 +1,4 @@
 ---
-
 - name: Ansible Playbook for installing nifi
   hosts: master
   remote_user: "{{ deployer }}"

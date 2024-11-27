@@ -1,3 +1,4 @@
+---
 - name: configuring radon_master
   hosts: master
   gather_facts: true

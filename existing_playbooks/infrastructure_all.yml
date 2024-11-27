@@ -1,3 +1,4 @@
+---
 # NOTE(mastensg): exclude hosts which have their own ansible directories.
 - hosts: all,!bomba,!heim,!p2k16-production,!p2k16-staging
   roles:

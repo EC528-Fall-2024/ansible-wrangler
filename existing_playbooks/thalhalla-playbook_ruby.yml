@@ -1,7 +1,7 @@
+---
 # Ansible playbook for ruby
 #
 # Author: Josh Cox <josh 'at' webhosting coop>
----
 
 - name: ruby install
   hosts: thalhalla

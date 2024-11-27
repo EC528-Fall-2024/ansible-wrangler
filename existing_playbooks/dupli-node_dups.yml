@@ -1,6 +1,4 @@
-#!/usr/bin/env ansible-playbook
 ---
-
 - import_playbook: asserts.yml
 
 - name: configure backpninja for nodes

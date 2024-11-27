@@ -1,4 +1,4 @@
-#!/usr/local/bin/ansible-playbook --inventory=inventory
+---
 - name: '{{ ansible_name }} | bundle | build' 
   hosts: containerone
   vars_files:
