@@ -60,8 +60,6 @@ def fetch_unresolved_incidents():
 def update_incident(incident_sys_id, payload):
     url = f"{instance}{incident_endpoint}/{incident_sys_id}"
     response = requests.patch(url, json=payload, headers=headers, auth=HTTPBasicAuth(username, password))
-    print(url)
-    print(response)
     response.raise_for_status()
     print(f"Updated Incident {incident_sys_id}: {payload}")
 
