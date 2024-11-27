@@ -1,7 +1,25 @@
 ---
-- name: Print Hello World
-  hosts: localhost
+- name: grab information about this IOT device
+  hosts: iot
+  become: yes
+  gather_facts: false
   tasks:
-    - name: Display message
+    - name: print message
       debug:
-        msg: "Hello World"
+        msg: "this is an IOT ansible playbook"
+
+    - name: grab IOT version information
+      raw: "cat /etc/*release"
+      register: first_command_output
+
+    - name: printing to terminal IOT information
+      debug:
+        msg: "{{first_command_output.stdout}}"
+
+    - name: grab memory footprint from IOT device
+      raw: "free -m"
+      register: second_command_output
+
+    - name: printing IOT memory information
+      debug:
+        msg: "{{second_command_output.stdout}}"
