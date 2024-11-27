@@ -1,7 +1,3 @@
-# ssl.yml
-#
-# An Ansible playbook to create an SSL cirt using certbot
-# uses instructions from https://certbot.eff.org/lets-encrypt/ubuntufocal-nginx
 ---
 - hosts: all
   become: true

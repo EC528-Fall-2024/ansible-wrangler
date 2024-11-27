@@ -1,5 +1,3 @@
-#The Ansible Playbook above is responsible for configuring the EC2 instance and copy over the files/index.js file.
-
 ---
  # Exercise for setting up a web server in an EC
  - name: Exercise for setting up a web server in an EC 

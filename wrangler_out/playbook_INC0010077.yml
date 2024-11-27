@@ -1,0 +1,24 @@
+---
+- name: ServiceNow Login Check
+  hosts: localhost
+  gather_facts: no
+  tasks:
+    - name: Attempt to login to ServiceNow
+      uri:
+        url: "https://your-instance.service-now.com/api/now/table/sys_user?sysparm_limit=1"
+        method: GET
+        validate_certs: yes
+        user: your_username
+        password: your_password
+        force_basic_auth: yes
+      register: response
+
+    - name: Check if login was successful
+      debug:
+        msg: "Login Successful"
+      when: response.status == 200
+
+    - name: Display error message if login failed
+      debug:
+        msg: "Login Failed with Status Code {{ response.status }}"
+      when: response.status != 200

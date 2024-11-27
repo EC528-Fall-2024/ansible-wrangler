@@ -1,0 +1,14 @@
+---
+- name: Restart ServiceNow Service
+  hosts: servicenow_server
+  become: yes
+  tasks:
+    - name: Stop ServiceNow service
+      service:
+        name: servicenow
+        state: stopped
+
+    - name: Start ServiceNow service
+      service:
+        name: servicenow
+        state: started

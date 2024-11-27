@@ -1,3 +1,4 @@
+---
 scripts:
   encrypt_prod_env: |
     ansible-vault encrypt .env.prod

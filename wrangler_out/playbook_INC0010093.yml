@@ -1,0 +1,19 @@
+---
+- name: Example Playbook
+  hosts: all
+  tasks:
+    - name: Ensure a file exists
+      file:
+        path: /tmp/example.txt
+        state: touch
+
+    - name: Install a package
+      yum:
+        name: httpd
+        state: present
+
+    - name: Start and enable the service
+      service:
+        name: httpd
+        state: started
+        enabled: yes

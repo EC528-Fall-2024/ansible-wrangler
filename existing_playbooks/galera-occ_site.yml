@@ -1,5 +1,5 @@
+---
 # linode galera ansible playbook
-
 # cluster pre-check
 - name: pre-check
   hosts: galera_servers

@@ -1,5 +1,5 @@
-# Ansible Playbook for Subutai Jenkins Blueprint
 ---
+# Ansible Playbook for Subutai Jenkins Blueprint
 
 - hosts: jenkins
   remote_user: root

@@ -1,0 +1,16 @@
+---
+- name: Update and install packages
+  hosts: all
+  become: yes
+  tasks:
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+
+    - name: Install required packages
+      apt:
+        name:
+          - vim
+          - curl
+          - wget
+        state: present

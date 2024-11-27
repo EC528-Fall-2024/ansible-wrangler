@@ -1,0 +1,23 @@
+---
+- name: Install and configure Apache web server
+  hosts: webservers
+  become: yes
+  tasks:
+    - name: Ensure Apache is installed
+      yum:
+        name: httpd
+        state: present
+
+    - name: Start and enable Apache service
+      service:
+        name: httpd
+        state: started
+        enabled: yes
+
+    - name: Copy index.html to web root
+      copy:
+        src: files/index.html
+        dest: /var/www/html/index.html
+        owner: apache
+        group: apache
+        mode: '0644'

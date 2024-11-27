@@ -1,7 +1,5 @@
 ---
 # Ansible playbook for an ELK (Elasticsearch, Logstash, Kibana) logging server.
-#
-# original @author Jeff Geerling (2014).
 - hosts: elk
   sudo: true
 

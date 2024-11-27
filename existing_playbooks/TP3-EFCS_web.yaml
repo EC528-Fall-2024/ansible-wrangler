@@ -1,16 +1,3 @@
--Guide d'administration système avec Ansible
- Ansible Tutorial for Beginners
-
--Documentation sur l'inventaire Ansible
- Documentation Ansible Inventory
-
--Documentation de la collection Community.Docker pour Ansible
- Community Docker Collection
-
--Meilleures pratiques pour les Playbooks Ansible
- Ansible Playbook Best Practices
-
-
 ---
 - hosts: webservers
   become: true

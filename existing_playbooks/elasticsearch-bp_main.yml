@@ -1,6 +1,5 @@
-# Ansible Playbook for Subutai Elasticsearch Blueprint
 --- 
-
+# Ansible Playbook for Subutai Elasticsearch Blueprint
 - hosts: elasticsearch
   remote_user: root
   tasks:

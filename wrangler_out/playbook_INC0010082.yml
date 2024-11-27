@@ -1,0 +1,19 @@
+---
+- name: Install and configure Nginx
+  hosts: all
+  become: yes
+  tasks:
+    - name: Update package cache
+      apt:
+        update_cache: yes
+
+    - name: Install Nginx
+      apt:
+        name: nginx
+        state: present
+
+    - name: Start and enable Nginx service
+      systemd:
+        name: nginx
+        enabled: true
+        state: started

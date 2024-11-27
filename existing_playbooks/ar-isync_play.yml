@@ -1,6 +1,4 @@
-#!/usr/bin/env ansible-playbook
 ---
-
 - hosts: local
   gather_facts: False
 

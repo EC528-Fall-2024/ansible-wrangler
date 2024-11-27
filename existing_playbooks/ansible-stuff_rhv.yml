@@ -1,4 +1,3 @@
-#!/usr/bin/env ansible-playbook
 ---
 - name: Red Hat Virtualization Manager
   hosts: rhv_hosts

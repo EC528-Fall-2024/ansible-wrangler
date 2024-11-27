@@ -1,5 +1,5 @@
-# ansible-playbook --ask-sudo-pass -i "localhost," -c local work.yml
 ---
+# ansible-playbook --ask-sudo-pass -i "localhost," -c local work.yml
 - hosts: localhost
   connection: local
 

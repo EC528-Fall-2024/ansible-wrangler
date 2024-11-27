@@ -1,0 +1,31 @@
+---
+- name: Example Playbook
+  hosts: all
+  become: yes
+  tasks:
+    - name: Ensure Apache is installed
+      yum:
+        name: httpd
+        state: present
+
+    - name: Start and enable Apache service
+      systemd:
+        name: httpd
+        state: started
+        enabled: true
+
+    - name: Create a simple index.html file
+      copy:
+        dest: /var/www/html/index.html
+        content: |
+          <html>
+          <head><title>Welcome</title></head>
+          <body><h1>Hello, World!</h1></body>
+          </html>
+
+    - name: Ensure Firewall allows HTTP traffic
+      firewalld:
+        service: http
+        permanent: yes
+        immediate: yes
+        state: enabled

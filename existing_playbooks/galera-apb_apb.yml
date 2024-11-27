@@ -1,3 +1,4 @@
+---
 version: 1.0
 name: galera-apb
 description: Deploy Galera for MySQL with a Replication Operator

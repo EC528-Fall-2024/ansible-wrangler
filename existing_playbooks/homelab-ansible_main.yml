@@ -1,3 +1,4 @@
+---
 - name: Raul's homeserver Ansible playbook
   hosts: all
   become: true
