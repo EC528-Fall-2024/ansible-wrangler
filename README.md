@@ -40,8 +40,9 @@ The Ansible Wrangler Automation project is a fully automated solution that integ
 
 ## Project Visions and Overall Goals
 Our vision is to reduce manual efforts involved in incident management and solution playbook creation by streamlining the process of generating, managing, and deploying playbooks in Ansible in response to incidents reported by ServiceNow users. 
+
 This system:
-- automates the process of creating appropriate Ansible playbooks via the Ollama AI model based on the user's reported incident.
+- Automates the process of creating appropriate Ansible playbooks via the Ollama AI model based on the user's reported incident.
 - It also checks for pre-existing playbooks in the GitHub repository using RAG. It will then determine if a suitable playbook exists and return it to the user. 
 - If no suitable playbook exists, the system will dynamically generate one based on its understanding of the error, the provided description, and historical data similar to this issue using Ollama.
 - The ideal playbook will then automatically be fed into Redhat's Ansible to be verified, run, and deployed. And the ideal playbook will be stored into a git repo for future use. 
