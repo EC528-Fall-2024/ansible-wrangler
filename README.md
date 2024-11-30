@@ -133,20 +133,26 @@ These are some of the features that we could implement after the completion of o
 ## Solution Concept and General Architectural of the Project:
 This project follows a modular architecture that integrates several components to automate incident handling and playbook generation. Below is a general architectural overview and workflow of the project: 
 Architectural components:
-1. ServiceNow: This is the starting point of the workflow, where incidents are generated and managed. We will utilize ServiceNow API to fetch incidents.
-2. Ansible Wrangler Automation: The core of this automation engine that:
+1. ServiceNow: This is the starting point of the workflow, where incidents are generated and managed. We will utilize ServiceNow API and SNOW interface to fetch incidents.
+2. Automation: The core of this automation engine that:
    - Incident Retrieval: get incidents created by users from ServiceNow.
    - Playbook Search Module: searches for existing playbooks in a GitHub repo to check for a match with the incident description
-   - OpenAI API Interaction: if no match is found, this module generates a new Ansible playbook using the OpenAI GPT model based on the description of the incident.
-   - GitHub API Integration: Automatically submits a pull request to a specific GitHub repo for the newly generated playbook
-   - Incident State Updater: Updates the state of the incident in ServiceNow to notify the user about the action taken. 
+   - Llama Interaction: if no match is found, this module generates a new Ansible playbook using the Llama model based on the description of the incident.
+   - GitHub API Integration: Automatically submits a pull request to a specific GitHub repo for the newly generated playbook. This stores all the existing playbooks.
+   - Incident State Updater: Updates the state of the incident in ServiceNow to notify the user about the action taken (through ServiceNow activity/comments) 
 3. GitHub Repository: A version control system where the existing playbooks are stored, and new playbooks are committed. We will be using the GitHub API to manage the repository, branches, commits, and pull requests. 
-4. OpenAI API: The natural language processing model (GPT) that interprets incident descriptions and generates Ansible playbooks.
+4. Llama: The natural language processing model (GPT) that interprets incident descriptions and generates Ansible playbooks.
 
-### General Flow of Data and Interaction:
 <img width="811" alt="image" src="https://github.com/user-attachments/assets/eaec2984-7cc5-47b4-95fd-66038453f5c6">
 
 This solution is scalable, allowing it to be expanded or enhanced with more features, such as intelligent playbook customization, based on the timeline and evolving project needs.
+
+Our module communication chart:
+<img width="963" alt="image" src="https://github.com/user-attachments/assets/11055652-c54b-43c9-b44f-d41039fee3bb">
+
+Detailed Process chart:
+<img width="757" alt="image" src="https://github.com/user-attachments/assets/c24c2201-45fa-4e91-a96a-ad9e7a189548">
+
 
 ## Design Implications and Discussion
 1. API-Driven Architecture: The decision to use an API-driven architecture ensures flexibility and scalability. By integrating with ServiceNow, Gen AI API, and GitHub APIs, the system is modular and can easily be expanded to include other services in the future.
