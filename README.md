@@ -39,21 +39,21 @@ python main.py
 
 
 ## Project Background and Description
-The Ansible Wrangler Automation project is a fully automated solution that integrates ServiceNow incident management with Ansible playbook generation and Github repository management. This project aims to simplify and streamline the process of generating, managing, and deploying Ansible playbooks in response to incidents reported by ServiceNow users. This system automates the process of identifying incidents, creating appropriate Ansible playbooks via a Gen AI API, e.g., openAI API, checking for pre-existing playbooks, and pushing changes to a GitHub repository through pull requests. Overall this project should reduce the time between reporting an error and getting feedback from another software developer by having a solution be generated immediately. This should allow more people to be able to use ansible without having in-depth knowledge about how to fine-tune their system.
+The Ansible Wrangler Automation project is a fully automated solution that integrates ServiceNow incident management with Ansible playbook generation and Github repository management. This project aims to simplify and streamline the process of generating, managing, and deploying Ansible playbooks in response to incidents reported by ServiceNow users. This system automates the process of creating appropriate Ansible playbooks via the Ollama AI model based on the user's reported incident. It also checks for pre-existing playbooks in the GitHub repository using RAG. Overall this project should reduce the time between reporting an error and getting feedback from another software developer by having a solution be generated immediately. This should allow more people to be able to use Ansible without having in-depth knowledge about how to fine-tune their system.
 
 ## Visions and Overall Goals
-Our vision is to reduce manual efforts involved in incident management and playbook creation, and create a fully automated pipeline that helps companies and software developers streamline their problem-solving process. 
+Our vision is to reduce manual efforts involved in incident management and solution playbook creation, and create a fully automated pipeline that helps companies and software developers streamline their problem-solving process. 
 
-The preliminary goal is to create a system where users can pass code alongside an error message to a chat-based interface, such as Slack or other bot-accessible systems which is most utilized by the company using the platform (in this case RedHat). The bot with then use this information to generate a prompt that leverages an LLM to search through a git repository populated with potentially relevant playbooks that address issues. It will then determine if a suitable playbook exists and return it to the user. 
+The preliminary goal is to create a system where users can pass or report an issue with their IT system through a ServiceNow Portal. The portal then passes this incident issue to our ansible automation system, where it uses this information to generate a prompt that leverages an LLM to search through a git repository populated with potentially relevant playbooks that address issues. It will then determine if a suitable playbook exists and return it to the user. 
 
-If no suitable playbook exists, the AI will dynamically generate one based on its understanding of the error, the provided code, and historical data similar to this issue. The ideal playbook will offer a step by step guide in resolving the issue which can be stored for future use. 
+If no suitable playbook exists, the system will dynamically generate one based on its understanding of the error, the provided description, and historical data similar to this issue. The ideal playbook will then automatically be fed into Redhat's Ansible to be verified, run, and deployed. 
 
-This automation reduces the need for manual troubleshooting and playbook creating, helping teams efficiently address issues and continuously enhance their internal databases.
+This automation reduces the need for manual troubleshooting and playbook creation, helping teams efficiently address issues and continuously enhance their internal databases.
 
 ## Users and Personas of the Project
 ### Site Reliability Engineer (SRE): 
 - Key Characteristics:
-  -  Responsible for ensuring high availability, performance, and security of infrastructure
+  - Responsible for ensuring high availability, performance, and security of infrastructure
   - Frequently responds to incidents and investigates operational issues
   - Familiar with Ansible and monitoring platforms (e.g. Prometheus, Grafana)
   - Needs rapid and reliable solutions for infrastructure problems
@@ -77,14 +77,14 @@ This automation reduces the need for manual troubleshooting and playbook creatin
 - Key Characteristics:
   - Responsible for ensuring the security and compliance of the OS and infrastructure
   - Identifies and remediates security incidents, vulnerabilities, and misconfigurations
-  - Reviews security impact of proposed playbooks
+  - Review security impact of proposed playbooks
 - Primary Actions:
   - Audits generated playbooks to ensure they adhere to security policies
   - Validates that proposed remediations don’t introduce new vulnerabilities or compliance issues
   - Provides feedback on security aspects of automation processes
 ### DevOps Engineer
 - Key Characteristics:
-  - Bridges gap between development and operations, and maintains CI/CD pipelines
+  - Bridges the gap between development and operations, and maintains CI/CD pipelines
   - Integrates playbooks into deployment workflows and continuous automation pipelines
 - Primary Actions:
   - Manages and merges playbooks into Git repositories.
