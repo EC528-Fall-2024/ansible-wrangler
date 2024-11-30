@@ -148,9 +148,11 @@ Architectural components:
 This solution is scalable, allowing it to be expanded or enhanced with more features, such as intelligent playbook customization, based on the timeline and evolving project needs.
 
 Our module communication chart:
+
 <img width="963" alt="image" src="https://github.com/user-attachments/assets/11055652-c54b-43c9-b44f-d41039fee3bb">
 
 Detailed Process chart:
+
 <img width="757" alt="image" src="https://github.com/user-attachments/assets/c24c2201-45fa-4e91-a96a-ad9e7a189548">
 
 
