@@ -38,20 +38,15 @@ python main.py
 ## Ansible Wrangler Automation
 The Ansible Wrangler Automation project is a fully automated solution that integrates ServiceNow incident management with Ansible playbook generation and Github repository management.
 
-## Project Vision and Overall Goals
-Our vision is to reduce manual efforts involved in incident management and solution playbook creation by streamlining the process of generating, managing, and deploying 
+## Project Visions and Overall Goals
+Our vision is to reduce manual efforts involved in incident management and solution playbook creation by streamlining the process of generating, managing, and deploying playbooks in Ansible in response to incidents reported by ServiceNow users. 
+This system:
+- automates the process of creating appropriate Ansible playbooks via the Ollama AI model based on the user's reported incident.
+- It also checks for pre-existing playbooks in the GitHub repository using RAG. It will then determine if a suitable playbook exists and return it to the user. 
+- If no suitable playbook exists, the system will dynamically generate one based on its understanding of the error, the provided description, and historical data similar to this issue using Ollama.
+- The ideal playbook will then automatically be fed into Redhat's Ansible to be verified, run, and deployed. And the ideal playbook will be stored into a git repo for future use. 
 
-## Description
-This project aims to simplify and streamline the process of generating, managing, and deploying Ansible playbooks in response to incidents reported by ServiceNow users. This system automates the process of creating appropriate Ansible playbooks via the Ollama AI model based on the user's reported incident. It also checks for pre-existing playbooks in the GitHub repository using RAG. Overall this project should reduce the time between reporting an error and getting feedback from another software developer by having a solution be generated immediately. This should allow more people to be able to use Ansible without having in-depth knowledge about how to fine-tune their system.
-
-## Visions and Overall Goals
-Our vision is to reduce manual efforts involved in incident management and solution playbook creation, and create a fully automated pipeline that helps companies and software developers streamline their problem-solving process. 
-
-The preliminary goal is to create a system where users can pass or report an issue with their IT system through a ServiceNow Portal. The portal then passes this incident issue to our ansible automation system, where it uses this information to generate a prompt that leverages an LLM to search through a git repository populated with potentially relevant playbooks that address issues. It will then determine if a suitable playbook exists and return it to the user. 
-
-If no suitable playbook exists, the system will dynamically generate one based on its understanding of the error, the provided description, and historical data similar to this issue. The ideal playbook will then automatically be fed into Redhat's Ansible to be verified, run, and deployed. 
-
-This automation reduces the need for manual troubleshooting and playbook creation, helping teams efficiently address issues and continuously enhance their internal databases.
+Overall, this project should reduce the time between reporting an error and getting feedback from another software developer/or IT personal by having a solution be generated immediately. This should allow more people to be able to use Ansible and fix any issues without having in-depth knowledge about how to fine-tune their system and help teams efficiently address issues.
 
 ## Users and Personas of the Project
 ### Site Reliability Engineer (SRE): 
