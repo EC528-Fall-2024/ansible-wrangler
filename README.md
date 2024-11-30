@@ -1,6 +1,6 @@
 # Ansible Wrangler
 
-## Members:
+## Members
 | Name | Role | Contact Information |
 | :---: | :---: | :---: |
 | Ryan Cook | Mentor  | rcook@redhat.com |
@@ -91,25 +91,44 @@ Overall, this project should reduce the time between reporting an error and gett
   - Ensures that proposed playbooks are tested and reliable before deployment. 
 
 ## Scope and Features of the Project
-### ServiceNow Integration: 
-Automatically queries ServiceNow to fetch incidents based on a specific user and updates the state of incidents after processing
-### AI-Generated Playbooks: 
-Uses OpenAI’s GPT model to generate Ansible playbooks based on incident descriptions when no suitable existing playbook is found 
-### GitHub Automation: 
-Automatically pushes generated playbooks to a Github repository, creates new branches, and submits pull requests for review
-### Existing Playbook Search: 
-Searches a repository of existing playbooks for a match to avoid duplicate playbook generation.
+### ServiceNow Integration
+- Automatically connects to ServiceNow to fetch unresolved incidents using specified user credentials.
+- Updates the state of incidents in ServiceNow after processing, including adding comments, tracking incident states, and marking them as resolved when successfully addressed.
+- ServiceNow Interface (SNOW): Users will be able to submit incidents and see solution/playbook in the incident activity section
+### AI-Generated Playbooks
+- Generates Ansible playbooks using the LLaMA language model when no suitable playbook is found in the repository.
+- Provides users with the option to either retrieve a relevant existing playbook or request the generation of a new one.
+### Existing Playbook Retrieval
+- Implements a FAISS-based retrieval system to search a repository of indexed Ansible playbooks.
+- Ranks and retrieves the top-k most relevant playbooks based on the incident description to minimize redundant generation.
+### GitHub Integration
+- Automatically saves generated or selected playbooks to a designated GitHub repository.
+- Commits changes, pushes them to the specified branch, and synchronizes with AWX for deployment.
+### AWX Automation
+- We integrated our system with AWX to:
+  - Trigger project updates.
+  - Create job templates for new playbooks.
+  - Launch and track jobs for Ansible playbook execution.
+- Ensures seamless deployment of playbooks to manage servers and resolve incidents on cloud
+### Interactive Incident Handling
+- We have the ability to retrieve the most recent comment from the activity section in an incident report on ServiceNow
+- Monitors comments on ServiceNow incidents to allow users to:
+  - Search for existing playbooks.
+  - Generate new playbooks dynamically using AI.
+  - Select and deploy a playbook by responding to the system’s prompts.
+### End-to-end Pipeline
+- A fully automated pipeline that spans incident detection, playbook generation/retrieval, deployment, and resolution tracking.
 
 ## Additional Features to be Considered
 These are some of the features that we could implement after the completion of our main objectives. 
-### Incident Feedback Loop: 
-implement feedback mechanism for SREs to rate effectiveness of generated playbooks
-### Incident categorization: 
-use generative AI to categorize incidents into different severity levels and assign relevant actions or workflows automatically
-### ChatOps Integration: 
-integrate with Slack, Microsoft Teams or other chat platforms to allow playbook generation within team chats, or direct access through 1-on-1 chat with an Ansible Wranger “bot”
-### Further Cloud and Queue Integration:
-Using different queue structures to prioritize different tasks and requests when handling a large load of incident requests. 
+- Incident Feedback Loop: 
+  - implement feedback mechanism for SREs to rate effectiveness of generated playbooks
+- Incident categorization: 
+  - use generative AI to categorize incidents into different severity levels and assign relevant actions or workflows automatically
+- ChatOps Integration: 
+  - integrate with Slack, Microsoft Teams or other chat platforms to allow playbook generation within team chats, or direct access through 1-on-1 chat with an Ansible Wranger “bot”
+- Further Cloud and Queue Integration:
+  - Using different queue structures to prioritize different tasks and requests when handling a large load of incident requests. 
 
 ## Solution Concept and General Architectural of the Project:
 This project follows a modular architecture that integrates several components to automate incident handling and playbook generation. Below is a general architectural overview and workflow of the project: 
