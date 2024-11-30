@@ -25,8 +25,6 @@
 ## Setup
 Install Ollama and run it using "ollama serve" on terminal
 
-
-
 if you have a gpu:
 conda env create -f environment.yml
 conda activate faiss_env
@@ -37,9 +35,14 @@ conda activate faiss_env_cpu
 
 python main.py
 
+## Ansible Wrangler Automation
+The Ansible Wrangler Automation project is a fully automated solution that integrates ServiceNow incident management with Ansible playbook generation and Github repository management.
 
-## Project Background and Description
-The Ansible Wrangler Automation project is a fully automated solution that integrates ServiceNow incident management with Ansible playbook generation and Github repository management. This project aims to simplify and streamline the process of generating, managing, and deploying Ansible playbooks in response to incidents reported by ServiceNow users. This system automates the process of creating appropriate Ansible playbooks via the Ollama AI model based on the user's reported incident. It also checks for pre-existing playbooks in the GitHub repository using RAG. Overall this project should reduce the time between reporting an error and getting feedback from another software developer by having a solution be generated immediately. This should allow more people to be able to use Ansible without having in-depth knowledge about how to fine-tune their system.
+## Project Vision and Overall Goals
+Our vision is to reduce manual efforts involved in incident management and solution playbook creation by streamlining the process of generating, managing, and deploying 
+
+## Description
+This project aims to simplify and streamline the process of generating, managing, and deploying Ansible playbooks in response to incidents reported by ServiceNow users. This system automates the process of creating appropriate Ansible playbooks via the Ollama AI model based on the user's reported incident. It also checks for pre-existing playbooks in the GitHub repository using RAG. Overall this project should reduce the time between reporting an error and getting feedback from another software developer by having a solution be generated immediately. This should allow more people to be able to use Ansible without having in-depth knowledge about how to fine-tune their system.
 
 ## Visions and Overall Goals
 Our vision is to reduce manual efforts involved in incident management and solution playbook creation, and create a fully automated pipeline that helps companies and software developers streamline their problem-solving process. 
