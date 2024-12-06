@@ -33,10 +33,11 @@ fi
 # Check if the 'faiss_env' environment exists
 if conda env list | grep -q 'faiss_env'; then
     echo "Conda environment 'faiss_env' already exists."
+elif [ -f "environment.yml" ]; then
+    echo "Creating Conda environment from environment.yml..."
+    conda env create -f environment.yml
 else
-    echo "Creating Conda environment 'faiss_env'..."
-    conda create -n faiss_env python=3.9 -y
-    echo "Conda environment 'faiss_env' created."
+    echo "No environment.yml found, skipping Conda environment creation."
 fi
 
 # Activate the 'faiss_env' environment
