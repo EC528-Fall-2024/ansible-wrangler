@@ -60,7 +60,7 @@ This system:
 
 Overall, this project should reduce the time between reporting an error and getting feedback from another software developer/or IT personal by having a solution be generated immediately. This should allow more people to be able to use Ansible and fix any issues without having in-depth knowledge about how to fine-tune their system and help teams efficiently address issues.
 
-## Users and Personas of the Project
+## Users and Personas
 **Site Reliability Engineer (SRE)**  
 
 **Key Characteristics:** Site Reliability Engineers are responsible for ensuring the high availability, performance, and security of infrastructure. They frequently respond to incidents and investigate operational issues, often utilizing tools like Ansible along with monitoring platforms such as Prometheus and Grafana. SREs need rapid and reliable solutions for infrastructure problems and are comfortable working with playbooks and scripts.  
