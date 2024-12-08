@@ -159,9 +159,9 @@ Detailed Process chart:
 
 
 ## Design Implications and Discussion
-1. API-Driven Architecture: The decision to use an API-driven architecture ensures flexibility and scalability. By integrating with ServiceNow, Gen AI API, and GitHub APIs, the system is modular and can easily be expanded to include other services in the future.
-2. Using Existing Language Models for Playbook Generation: allows the system to automatically create customized and relevant Ansible playbooks based on incident descriptions. This reduces manual intervention and accelerates incident resolution. Using a pre-trained model also enhances efficiency while ensuring that the system can adapt to various types of incidents with minimal human input.
-3. Automation: The whole point of this project is to use automation to speed up incident report. By eliminating manual steps, the system can quickly respond to incidents, reducing resolution times and ensuring a consistent, repeatable workflow.
+1. **API-Driven Architecture**: The decision to use an API-driven architecture ensures flexibility and scalability. By integrating with ServiceNow, Gen AI API, and GitHub APIs, the system is modular and can easily be expanded to include other services in the future.
+2. **AI-Driven Playbook Generation**: allows the system to automatically create customized and relevant Ansible playbooks based on incident descriptions. This reduces manual intervention and accelerates incident resolution. Using a pre-trained model also enhances efficiency while ensuring that the system can adapt to various types of incidents with minimal human input.
+3. **Automation-First Approach**: The whole point of this project is to use automation to speed up incident report. By eliminating manual steps, the system can quickly respond to incidents, reducing resolution times and ensuring a consistent, repeatable workflow.
 
 ## Acceptance Criteria
 We want to make sure that the core functionality of the Ansible Wrangler Automation project is met. To ensure this, essential features and capabilities must be implemented and verified for this project to be complete. Essential features include:
