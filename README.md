@@ -1,8 +1,5 @@
-<div align="center">
-
 # Ansible Wrangler
 
-</div>
 
 ## Table of Contents
 - [Members](#members)
