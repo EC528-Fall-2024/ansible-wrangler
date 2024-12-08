@@ -181,8 +181,6 @@ Each release will focus on a specific set of features, starting with the core fu
 
 In the first sprint, we focused on researching all the necessary frameworks, structures, and APIs for this project. We researched multiple LLMS (OpenAI and Llama) to see which model is faster and more efficient for Ansible playbook generation. We also researched Rest API to see how data can be transferred between different modules within our project. We also investigated different cloud services and structures to apply the best cloud application. 
 
-Please see below for our sprint 1 slides and presentation: https://drive.google.com/drive/folders/19N2t67B59QdDt1MnHAf7CkfM7lJ14rJK?usp=drive_link
-
 #### Second Sprint: Core Functionality
 
 The goal of the second sprint is to establish the core structure of the Ansible Wrangler Automation system and implement basic functionalities that enable the system to handle incidents efficiently. 
