@@ -6,6 +6,7 @@
 - [Progress](#progress)
 - [Setup](#setup)
 - [Project Overview](#project-overview)
+- [How this Solution fits into the RedHat Ecosystem](#how-this-solution-fits-into-the-redhat-ecosystem)
 - [Project Visions and Overall Goals](#project-visions-and-overall-goals)
 - [Users and Personas of the Project](#users-and-personas)
 - [Scope and Features](#scope-and-features)
@@ -50,7 +51,19 @@
 5. **Note**: If Conda is not installed on your machine, you may need to run the script **twice** for proper setup.
 
 ## Project Overview
-The Ansible Wrangler Automation project is a fully automated solution that integrates ServiceNow incident management with Ansible playbook generation and Github repository management.
+The Ansible Wrangler Automation project is an end-to-end solution that integrates ServiceNow incident management with Ansible playbook generation and AWX management and deployment. The goal is to minimize the effort and expertise required to create and deploy Ansible Playbooks in response to incoming incidents. 
+
+This system employs Retrieval Augmented Generation (RAG) to identify relevant existing playbooks and advanced AI models (wen2.5-coder:32b) to generate targeted playbooks, ensuring rapid, accurate responses to newly reported incidents. AWX (the open-source upstream project for Red Hat Ansible Platform’s UI) to further validate and test these playbooks prior to deployment, allowing for instant corrective action with minimal human intervention.
+
+## How this Solution fits into the RedHat Ecosystem
+
+Some of the Core Components of RedHat’s offerings include the following:
+1.	Ansible Automation Platform is an open-source automation tool for IT tasks, management, application deployment, provisioning, and orchestration. It allows IT administrators to automate tasks and manage systems more efficiently by writing simple YAML-based playbooks. The YAML playbooks are a set of instructions executed sequentially to automate IT tasks and ensure systems achieve the desired state.
+2.	Ansible Galaxy is a community hub where users can share and download Ansible roles and collections to build playbooks, but users still need to customize these components manually.
+3.	Ansible Content Collections are pre-packaged modules, plugins, roles, and playbooks that help automate specific tasks.
+4.	AWX offers a web-based user interface for managing and orchestrating Ansible playbooks, inventories, and schedules.
+
+As seen above, methods exist to deploy playbooks and find components to build playbooks, but there is no method of automatically generating these playbooks. Creating these playbooks remains a manual task that typically requires expertise in Ansible. The Ansible Wrangler Automation project fills the gap by automating the generation of playbooks in response to reported incidents (done through service now in this implementation)
 
 ## Project Visions and Overall Goals
 Our vision is to reduce manual efforts involved in incident management and solution playbook creation by streamlining the process of generating, managing, and deploying playbooks in Ansible in response to incidents reported by ServiceNow users. 
