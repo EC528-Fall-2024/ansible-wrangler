@@ -1,5 +1,20 @@
 # Ansible Wrangler
 
+## Table of Contents
+- [Members](#members)
+- [Progress](#progress)
+- [Setup](#setup)
+- [Project Overview](#project-overview)
+- [Project Visions and Overall Goals](#project-visions-and-overall-goals)
+- [Users and Personas of the Project](#users-and-personas)
+- [Scope and Features](#scope-and-features)
+- [Solution Concept and General Architecture](#solution-concept-and-general-architecture)
+- [Design Implications and Discussion](#design-implications-and-discussion)
+- [Acceptance Criteria](#acceptance-criteria)
+- [Release Planning](#release-planning)
+- [General Comments](#general-comments)
+- [Resources](#resources)
+
 ## Members
 | Name | Role | Contact Information |
 | :---: | :---: | :---: |
@@ -31,7 +46,7 @@
 4. Run the `start_wrangler.sh` script with root privileges.
 5. **Note**: If Conda is not installed on your machine, you may need to run the script **twice** for proper setup.
 
-## Ansible Wrangler Automation
+## Project Overview
 The Ansible Wrangler Automation project is a fully automated solution that integrates ServiceNow incident management with Ansible playbook generation and Github repository management.
 
 ## Project Visions and Overall Goals
@@ -71,7 +86,7 @@ Overall, this project should reduce the time between reporting an error and gett
 **Primary Actions:** In this project, DevOps Engineers manage and merge playbooks into Git repositories while automating their execution as part of CI/CD pipelines. They test and validate proposed playbooks, ensuring reliability and seamless integration into continuous automation workflows.
 
 
-## Scope and Features of the Project
+## Scope and Features
 **ServiceNow Integration**
 - Automatically connects to ServiceNow to fetch unresolved incidents using specified user credentials.
 - Updates the state of incidents in ServiceNow after processing, including adding comments, tracking incident states, and marking them as resolved when successfully addressed.
