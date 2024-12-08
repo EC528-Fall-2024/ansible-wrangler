@@ -58,7 +58,7 @@ This system employs Retrieval Augmented Generation (RAG) to identify relevant ex
 ## How this Solution fits into the RedHat Ecosystem
 
 Some of the Core Components of RedHat’s offerings include the following:
-1.	`Ansible Automation` Platform is an open-source automation tool for IT tasks, management, application deployment, provisioning, and orchestration. It allows IT administrators to automate tasks and manage systems more efficiently by writing simple YAML-based playbooks. The YAML playbooks are a set of instructions executed sequentially to automate IT tasks and ensure systems achieve the desired state.
+1.	`Ansible Automation Platform` is an open-source automation tool for IT tasks, management, application deployment, provisioning, and orchestration. It allows IT administrators to automate tasks and manage systems more efficiently by writing simple YAML-based playbooks. The YAML playbooks are a set of instructions executed sequentially to automate IT tasks and ensure systems achieve the desired state.
 2.	`Ansible Galaxy` is a community hub where users can share and download Ansible roles and collections to build playbooks, but users still need to customize these components manually.
 3.	`Ansible Content Collections` are pre-packaged modules, plugins, roles, and playbooks that help automate specific tasks.
 4.	`AWX` offers a web-based user interface for managing and orchestrating Ansible playbooks, inventories, and schedules.
