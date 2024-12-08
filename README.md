@@ -38,6 +38,8 @@
 
 [Sprint 5 Demo](https://drive.google.com/drive/folders/1G4xL2IC2cTTBUZB7TVk2pJHk90gwYuo-?usp=drive_link)
 
+[Final Presentation](https://drive.google.com/drive/folders/1QGru0FKWatIEC660eFXXverskRubWrIA?usp=sharing)
+
 ## Setup
 1. Clone the main branch of the repository to your machine.
 2. Ensure you have the following prerequisites:
