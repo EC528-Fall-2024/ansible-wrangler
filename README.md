@@ -3,6 +3,7 @@
 # Ansible Wrangler
 
 </div>
+
 ## Table of Contents
 - [Members](#members)
 - [Progress](#progress)
