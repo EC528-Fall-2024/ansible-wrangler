@@ -23,17 +23,13 @@
 [Sprint 5 Demo](https://drive.google.com/drive/folders/1G4xL2IC2cTTBUZB7TVk2pJHk90gwYuo-?usp=drive_link)
 
 ## Setup
-Install Ollama and run it using "ollama serve" on terminal
-
-if you have a gpu:
-conda env create -f environment.yml
-conda activate faiss_env
-
-else:
-conda env create -f environment_cpu.yml
-conda activate faiss_env_cpu
-
-python main.py
+1. Clone the main branch of the repository to your machine.
+2. Ensure you have the following prerequisites:
+   - A **ServiceNow Developer Instance**.
+   - An **AWX Instance**.
+3. Embed your credentials into the configuration files as specified in the documentation.
+4. Run the `start_wrangler.sh` script with root privileges.
+5. **Note**: If Conda is not installed on your machine, you may need to run the script **twice** for proper setup.
 
 ## Ansible Wrangler Automation
 The Ansible Wrangler Automation project is a fully automated solution that integrates ServiceNow incident management with Ansible playbook generation and Github repository management.
