@@ -132,7 +132,7 @@ These are some of the features that we could implement after the completion of o
 - Further Cloud and Queue Integration:
   - Using different queue structures to prioritize different tasks and requests when handling a large load of incident requests. 
 
-## Solution Concept and General Architectural
+## Solution Concept and General Architecture
 This project follows a modular architecture that integrates several components to automate incident handling and playbook generation. Below is a general architectural overview and workflow of the project: 
 Architectural components:
 1. ServiceNow: This is the starting point of the workflow, where incidents are generated and managed. We will utilize ServiceNow API and SNOW interface to fetch incidents.
