@@ -159,7 +159,7 @@ Our module communication chart:
 
 Detailed Process chart:
 
-<img width="757" alt="image" src="https://github.com/EC528-Fall-2024/ansible-wrangler/blob/main/workflow.png">
+<img width="757" alt="image" src="https://github.com/EC528-Fall-2024/ansible-wrangler/blob/main/workflow1.png">
 
 
 ## Design Implications and Discussion
