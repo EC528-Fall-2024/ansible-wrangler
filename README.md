@@ -54,7 +54,7 @@
    - INSTANCE (ServiceNow dev instance)
    - USERNAME (ServiceNow dev instance)
    - PASSWORD (ServiceNow dev instance)
-   - GITHUB_UR (your cloned repo)
+   - GITHUB_URL (your cloned repo)
    - BRANCH=main
    - EXISTING_DIRECTORY=existing_playbooks
    - OUT_DIRECTORY=wrangler_out
