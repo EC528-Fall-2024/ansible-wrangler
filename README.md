@@ -42,13 +42,26 @@
 [Final Presentation](https://drive.google.com/drive/folders/1QGru0FKWatIEC660eFXXverskRubWrIA?usp=sharing)
 
 ## Setup
-1. Clone the main branch of the repository to your machine.
+1. Clone the main branch of the repository to your machine (where you intend the cloud service to be hosted).
 2. Ensure you have the following prerequisites:
    - A **ServiceNow Developer Instance**.
    - An **AWX Administrator Instance**.
-3. Embed your credentials into the configuration file (.env) as specified.
-4. Run the `start_wrangler.sh` script with root privileges.
-5. **Note**: If Conda is not installed on your machine, you may need to run the script **twice** for proper setup.
+3. Embed the following credentials into a configuration (.env) file in the global directory of this repo as specified:
+   - AWX_URL (AWX instance)
+   - AWX_TOKEN (API key)
+   - PROJECT_ID (AWX)
+   - INVENTORY_ID (AWX)
+   - INSTANCE (ServiceNow dev instance)
+   - USERNAME (ServiceNow dev instance)
+   - PASSWORD (ServiceNow dev instance)
+   - GITHUB_UR (your cloned repo)
+   - BRANCH=main
+   - EXISTING_DIRECTORY=existing_playbooks
+   - OUT_DIRECTORY=wrangler_out
+   - CREDENTIAL_ID (AWX)
+   - SERVER_LIMIT (AWX)
+4. Run the `bash start_wrangler.sh` with root privileges.
+5. **Note**: If Conda is not installed on your machine, you may need to run the start script **twice** for proper setup.
 
 ## Project Overview
 The Ansible Wrangler Automation project is an end-to-end solution that integrates ServiceNow incident management with Ansible playbook generation and AWX management and deployment. The goal is to minimize the effort and expertise required to create and deploy Ansible Playbooks in response to incoming incidents. 
@@ -165,17 +178,19 @@ Detailed Process chart:
 ## Design Implications and Discussion
 1. **API-Driven Architecture**: The decision to use an API-driven architecture ensures flexibility and scalability. By integrating with ServiceNow, Gen AI API, and GitHub APIs, the system is modular and can easily be expanded to include other services in the future.
 2. **AI-Driven Playbook Generation**: allows the system to automatically create customized and relevant Ansible playbooks based on incident descriptions. This reduces manual intervention and accelerates incident resolution. Using a pre-trained model also enhances efficiency while ensuring that the system can adapt to various types of incidents with minimal human input.
-3. **Automation-First Approach**: The whole point of this project is to use automation to speed up incident report. By eliminating manual steps, the system can quickly respond to incidents, reducing resolution times and ensuring a consistent, repeatable workflow.
+3. **Automation-First Approach**: The whole point of this project is to use automation to speed up incident reports. By eliminating manual steps, the system can quickly respond to incidents, reducing resolution times and ensuring a consistent, repeatable workflow.
 
 ## Acceptance Criteria
 We want to make sure that the core functionality of the Ansible Wrangler Automation project is met. To ensure this, essential features and capabilities must be implemented and verified for this project to be complete. Essential features include:
-- ServiceNow Incident Retrieval
-- Existing Playbook search
-- OpenAI (or other language model) playbook generation
-- GitHub Integration
+- ServiceNow (SNOW interface) incident retrieval
+- Existing playbook search algorithm
+- LLM playbook generation
+- Git version control integration
+- AWX deployment
 - ServiceNow incident update
+- SNOW feedback loop & persistent cloud service
 
-## Release Planning 
+## Release Planning
 This project will be delivered in a series of iterative releases, each introducing new features and functionality incrementally. 
 
 ### Release overview
