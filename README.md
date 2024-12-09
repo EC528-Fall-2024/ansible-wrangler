@@ -45,15 +45,15 @@
 1. Clone the main branch of the repository to your machine.
 2. Ensure you have the following prerequisites:
    - A **ServiceNow Developer Instance**.
-   - An **AWX Instance**.
-3. Embed your credentials into the configuration files as specified in the documentation.
+   - An **AWX Administrator Instance**.
+3. Embed your credentials into the configuration file (.env) as specified.
 4. Run the `start_wrangler.sh` script with root privileges.
 5. **Note**: If Conda is not installed on your machine, you may need to run the script **twice** for proper setup.
 
 ## Project Overview
 The Ansible Wrangler Automation project is an end-to-end solution that integrates ServiceNow incident management with Ansible playbook generation and AWX management and deployment. The goal is to minimize the effort and expertise required to create and deploy Ansible Playbooks in response to incoming incidents. 
 
-This system employs Retrieval Augmented Generation (RAG) to identify relevant existing playbooks and advanced AI models (wen2.5-coder:32b) to generate targeted playbooks, ensuring rapid, accurate responses to newly reported incidents. AWX (the open-source upstream project for Red Hat Ansible Platform’s UI) to further validate and test these playbooks prior to deployment, allowing for instant corrective action with minimal human intervention.
+This system employs Retrieval Augmented Generation (RAG) to identify relevant existing playbooks and advanced AI models (qwen2.5-coder:32b) to generate targeted playbooks, ensuring rapid, accurate responses to newly reported incidents. AWX (the open-source upstream project for Red Hat Ansible Platform’s UI) to further validate and test these playbooks prior to deployment, allowing for instant corrective action with minimal human intervention.
 
 ## How this Solution fits into the RedHat Ecosystem
 
