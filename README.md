@@ -60,13 +60,13 @@
    - OUT_DIRECTORY=wrangler_out
    - CREDENTIAL_ID (AWX)
    - SERVER_LIMIT (AWX)
-4. Run the `bash start_wrangler.sh` with root privileges.
+4. Run `bash start_wrangler.sh` with root privileges.
 5. **Note**: If Conda is not installed on your machine, you may need to run the start script **twice** for proper setup.
 
 ## Project Overview
 The Ansible Wrangler Automation project is an end-to-end solution that integrates ServiceNow incident management with Ansible playbook generation and AWX management and deployment. The goal is to minimize the effort and expertise required to create and deploy Ansible Playbooks in response to incoming incidents. 
 
-This system employs Retrieval Augmented Generation (RAG) to identify relevant existing playbooks and advanced AI models (qwen2.5-coder:32b) to generate targeted playbooks, ensuring rapid, accurate responses to newly reported incidents. AWX (the open-source upstream project for Red Hat Ansible Platform’s UI) to further validate and test these playbooks prior to deployment, allowing for instant corrective action with minimal human intervention.
+This system employs Retrieval Augmented Generation (RAG) to identify relevant existing playbooks and an advanced LLM (qwen2.5-coder:32b) to generate targeted playbooks, ensuring rapid, accurate responses to newly reported incidents. AWX (the open-source upstream project for Red Hat Ansible Platform’s UI) is used to further validate playbooks and manage deployment, allowing for instant corrective action and execution with minimal human intervention.
 
 ## How this Solution fits into the RedHat Ecosystem
 
@@ -122,21 +122,21 @@ Overall, this project should reduce the time between reporting an error and gett
 - Commits changes, pushes them to the specified branch, and synchronizes with AWX for deployment.
   
 **AWX Automation**
-- We integrated our system with AWX to:
+We integrated our system with AWX to:
   - Trigger project updates.
   - Create job templates for new playbooks.
   - Launch and track jobs for Ansible playbook execution.
-- Ensures seamless deployment of playbooks to manage servers and resolve incidents on cloud.
+  - Ensure seamless deployment of playbooks to manage servers and resolve incidents on the cloud.
   
 **Interactive Incident Handling**
-- We have the ability to retrieve the most recent comment from the activity section in an incident report on ServiceNow
+- We can retrieve the most recent comment from the activity section in an incident report on ServiceNow
 - Monitors comments on ServiceNow incidents to allow users to:
   - Search for existing playbooks.
   - Generate new playbooks dynamically using AI.
   - Select and deploy a playbook by responding to the system’s prompts.
     
 **End-to-end Pipeline**
-- A fully automated pipeline that spans incident detection, playbook generation/retrieval, deployment, and resolution tracking.
+- A fully automated pipeline that spans incident detection, playbook retrieval/generation, deployment, and resolution tracking that supports multiple instances as a persistent cloud service.
 
 ## Additional Features to be Considered
 These are some of the features that we could implement after the completion of our main objectives. 
@@ -158,7 +158,8 @@ Architectural components:
    - Playbook Search Module: searches for existing playbooks in a GitHub repo to check for a match with the incident description
    - Llama Interaction: if no match is found, this module generates a new Ansible playbook using the Llama model based on the description of the incident.
    - GitHub API Integration: Automatically submits a pull request to a specific GitHub repo for the newly generated playbook. This stores all the existing playbooks.
-   - Incident State Updater: Updates the state of the incident in ServiceNow to notify the user about the action taken (through ServiceNow activity/comments) 
+   - AWX: validation and deployment of the selected playbook.
+   - Incident State Updater: Updates the state of the incident in ServiceNow to notify the user about the action taken (through ServiceNow activity/comments).
 3. GitHub Repository: A version control system where the existing playbooks are stored, and new playbooks are committed. We will be using the GitHub API to manage the repository, branches, commits, and pull requests. 
 4. Llama: The natural language processing model (GPT) that interprets incident descriptions and generates Ansible playbooks.
 
