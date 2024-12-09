@@ -163,10 +163,6 @@ Architectural components:
 3. GitHub Repository: A version control system where the existing playbooks are stored, and new playbooks are committed. We will be using the GitHub API to manage the repository, branches, commits, and pull requests. 
 4. Llama: The natural language processing model (GPT) that interprets incident descriptions and generates Ansible playbooks.
 
-<img width="811" alt="image" src="https://github.com/user-attachments/assets/eaec2984-7cc5-47b4-95fd-66038453f5c6">
-
-This solution is scalable, allowing it to be expanded or enhanced with more features, such as intelligent playbook customization, based on the timeline and evolving project needs.
-
 Our module communication chart:
 
 <img width="963" alt="image" src="https://github.com/user-attachments/assets/11055652-c54b-43c9-b44f-d41039fee3bb">
