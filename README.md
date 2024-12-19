@@ -60,8 +60,9 @@
    - OUT_DIRECTORY=wrangler_out
    - CREDENTIAL_ID (AWX)
    - SERVER_LIMIT (AWX)
-4. Run `bash start_wrangler.sh` with root privileges.
-5. **Note**: If Conda is not installed on your machine, you may need to run the start script **twice** for proper setup.
+4. Install Ollama model 'Qwen2.5-32B' on your cloud service VM provider from the Git repository (https://github.com/QwenLM/Qwen2.5.git)
+5. Run `bash start_wrangler.sh` with root privileges.
+6. **Note**: If Conda is not installed on your machine, you may need to run the start script **twice** for proper setup.
 
 ## Project Overview
 The Ansible Wrangler Automation project is an end-to-end solution that integrates ServiceNow incident management with Ansible playbook generation and AWX management and deployment. The goal is to minimize the effort and expertise required to create and deploy Ansible Playbooks in response to incoming incidents. 
